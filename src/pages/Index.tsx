@@ -1,12 +1,26 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import HeroSection from "@/components/HeroSection";
+import MovieGrid from "@/components/MovieGrid";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { featuredMovie, popularMovies, topRatedMovies, trendingMovies } from "@/services/movieData";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+      <Navbar />
+      
+      <main className="flex-grow">
+        <HeroSection featuredMovie={featuredMovie} />
+        
+        <div className="py-8 space-y-12">
+          <MovieGrid title="Popular Movies" movies={popularMovies} />
+          <MovieGrid title="Top Rated" movies={topRatedMovies} />
+          <MovieGrid title="Trending Now" movies={trendingMovies} />
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
