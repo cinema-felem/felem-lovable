@@ -103,7 +103,7 @@ const ShowtimeFilter: React.FC<ShowtimeFilterProps> = ({
           </div>
         </SelectTrigger>
         <SelectContent className="bg-cinema-dark-gray border-cinema-dark-gray/70">
-          <SelectItem value="" className="text-white hover:bg-cinema-dark-blue/70">
+          <SelectItem value="all" className="text-white hover:bg-cinema-dark-blue/70">
             All cinemas
           </SelectItem>
           {cinemas.map((cinema) => (

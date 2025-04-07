@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket, CalendarIcon, MapPin, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -117,7 +116,8 @@ const MovieDetails = () => {
   };
   
   const handleCinemaChange = (cinemaId: string | undefined) => {
-    setSelectedCinemaId(cinemaId);
+    // If the value is "all", set it to undefined to show all cinemas
+    setSelectedCinemaId(cinemaId === "all" ? undefined : cinemaId);
   };
   
   const clearFilters = () => {
