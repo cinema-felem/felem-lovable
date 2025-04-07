@@ -1,6 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard";
+import { Database } from "@/integrations/supabase/types";
+
+// Define TypeScript types for our database tables
+type TmdbRow = Database['public']['Tables']['tmdb']['Row'];
 
 export async function fetchPopularMovies(): Promise<Movie[]> {
   const { data, error } = await supabase
@@ -91,7 +95,7 @@ export async function searchMovies(query: string): Promise<Movie[]> {
 }
 
 // Helper function to transform tmdb data to Movie format
-function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
+function transformTmdbToMovies(tmdbMovies: TmdbRow[]): Movie[] {
   return tmdbMovies.map(movie => ({
     id: movie.id,
     title: movie.title,
