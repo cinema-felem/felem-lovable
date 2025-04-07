@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard";
 import { Database } from "@/integrations/supabase/types";
@@ -14,11 +15,18 @@ interface ImageJson {
 
 interface RatingsJson {
   tmdb?: number;
+  source?: string;
+  rating?: number;
+  votes?: number;
 }
 
 interface GenreJson {
   id?: number;
   name?: string;
+}
+
+interface StreamingJson {
+  providers?: string[];
 }
 
 export async function fetchPopularMovies(): Promise<Movie[]> {
@@ -77,21 +85,41 @@ export async function fetchMovieById(id: number) {
   if (!data) return null;
 
   const image = data.image as ImageJson | null;
-  const ratings = data.ratings as RatingsJson | null;
+  const ratings = data.ratings as RatingsJson[] | null;
   const genres = data.genres as GenreJson[] | null;
+  const streaming = data.streaming as StreamingJson | null;
+
+  // Extract all available ratings
+  const allRatings = ratings ? ratings.map(rating => ({
+    source: rating.source || 'Unknown',
+    rating: rating.rating || 0,
+    votes: rating.votes
+  })).filter(rating => rating.rating > 0) : [];
+
+  // Extract streaming providers if available
+  const streamingProviders = streaming?.providers || [];
 
   return {
     id: data.id,
     title: data.title,
+    originalTitle: data.original_title,
+    originalLanguage: data.original_language,
     posterPath: image?.poster_path ? `https://image.tmdb.org/t/p/w500${image.poster_path}` : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
     releaseYear: data.release_date ? new Date(data.release_date).getFullYear().toString() : "",
-    rating: ratings?.tmdb || 0,
+    releaseDate: data.release_date,
+    rating: ratings && ratings.length > 0 ? 
+      ratings.find(r => r.source === 'The Movie Database')?.rating || 
+      ratings[0].rating || 0 : 0,
+    allRatings: allRatings,
     genres: genres ? genres.map((genre) => genre.name || '') : [],
     director: "Director information not available",
     cast: ["Cast information not available"],
     runtime: data.runtime ? `${data.runtime} min` : "Unknown",
     overview: data.overview || "No overview available",
     backdrop: image?.backdrop_path ? `https://image.tmdb.org/t/p/original${image.backdrop_path}` : "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
+    parental: data.parental,
+    streamingProviders: streamingProviders,
+    originCountry: data.origin_country,
   };
 }
 
@@ -114,8 +142,13 @@ export async function searchMovies(query: string): Promise<Movie[]> {
 function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
   return tmdbMovies.map(movie => {
     const image = movie.image as ImageJson | null;
-    const ratings = movie.ratings as RatingsJson | null; 
+    const ratings = movie.ratings as RatingsJson[] | null; 
     const genres = movie.genres as GenreJson[] | null;
+    
+    // Find the TMDB rating or use the first available rating
+    const rating = ratings && ratings.length > 0 ? 
+      ratings.find(r => r.source === 'The Movie Database')?.rating || 
+      ratings[0].rating || 0 : 0;
     
     return {
       id: movie.id,
@@ -124,7 +157,7 @@ function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
         ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
         : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
       releaseYear: movie.release_date ? new Date(movie.release_date).getFullYear().toString() : "",
-      rating: ratings?.tmdb || 0,
+      rating: rating,
       genres: genres ? genres.map((genre) => genre.name || '') : [],
     };
   });
