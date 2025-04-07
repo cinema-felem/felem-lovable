@@ -38,6 +38,7 @@ const ShowtimeFilter: React.FC<ShowtimeFilterProps> = ({
 }) => {
   const hasAvailableDates = availableDates.length > 0;
   const hasCinemas = cinemas.length > 0;
+  const showCinemaSelector = cinemas.length > 0;
 
   // This function disables dates in the calendar that don't have showtimes
   const isDateAvailable = (date: Date) => {
@@ -89,34 +90,36 @@ const ShowtimeFilter: React.FC<ShowtimeFilterProps> = ({
         </PopoverContent>
       </Popover>
 
-      <Select
-        value={selectedCinemaId}
-        onValueChange={(value) => onCinemaChange(value || undefined)}
-        disabled={!hasCinemas}
-      >
-        <SelectTrigger 
-          className="bg-cinema-dark-gray/50 border-cinema-dark-gray/70 text-white w-full sm:w-[240px]"
+      {showCinemaSelector && (
+        <Select
+          value={selectedCinemaId}
+          onValueChange={(value) => onCinemaChange(value === "all" ? undefined : value)}
+          disabled={!hasCinemas}
         >
-          <div className="flex items-center">
-            <MapPin className="mr-2 h-4 w-4 text-cinema-gold" />
-            <SelectValue placeholder="All cinemas" />
-          </div>
-        </SelectTrigger>
-        <SelectContent className="bg-cinema-dark-gray border-cinema-dark-gray/70">
-          <SelectItem value="all" className="text-white hover:bg-cinema-dark-blue/70">
-            All cinemas
-          </SelectItem>
-          {cinemas.map((cinema) => (
-            <SelectItem 
-              key={cinema.id} 
-              value={cinema.id}
-              className="text-white hover:bg-cinema-dark-blue/70"
-            >
-              {cinema.name}
+          <SelectTrigger 
+            className="bg-cinema-dark-gray/50 border-cinema-dark-gray/70 text-white w-full sm:w-[240px]"
+          >
+            <div className="flex items-center">
+              <MapPin className="mr-2 h-4 w-4 text-cinema-gold" />
+              <SelectValue placeholder="All cinemas" />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-cinema-dark-gray border-cinema-dark-gray/70">
+            <SelectItem value="all" className="text-white hover:bg-cinema-dark-blue/70">
+              All cinemas
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            {cinemas.map((cinema) => (
+              <SelectItem 
+                key={cinema.id} 
+                value={cinema.id}
+                className="text-white hover:bg-cinema-dark-blue/70"
+              >
+                {cinema.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 };
