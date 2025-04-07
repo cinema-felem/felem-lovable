@@ -29,18 +29,40 @@ interface StreamingJson {
   providers?: string[];
 }
 
-export async function fetchPopularMovies(): Promise<Movie[]> {
-  const { data, error } = await supabase
+export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'): Promise<{movies: Movie[], hasMore: boolean}> {
+  let query = supabase
     .from('tmdb')
-    .select('id, title, image, release_date, ratings, genres')
-    .order('ratings->tmdb', { ascending: false });
+    .select('id, title, image, release_date, ratings, genres');
+  
+  // Apply sorting based on the option
+  if (sortBy === 'rating') {
+    query = query.order('ratings->tmdb', { ascending: false });
+  } else if (sortBy === 'recent') {
+    query = query.order('release_date', { ascending: false });
+  }
+  
+  // Add pagination
+  const from = page * limit;
+  const to = from + limit - 1;
+  
+  // Fetch one extra item to determine if there are more items
+  const { data, error } = await query
+    .range(from, to + 1);
 
   if (error) {
     console.error('Error fetching popular movies:', error);
-    return [];
+    return { movies: [], hasMore: false };
   }
-
-  return transformTmdbToMovies(data || []);
+  
+  // Check if we got an extra item (indicating there are more)
+  const hasMore = data && data.length > limit;
+  // Remove the extra item if it exists
+  const paginatedData = hasMore ? data.slice(0, limit) : data;
+  
+  return { 
+    movies: transformTmdbToMovies(paginatedData || []),
+    hasMore
+  };
 }
 
 export async function fetchTopRatedMovies(): Promise<Movie[]> {

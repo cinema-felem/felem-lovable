@@ -1,85 +1,88 @@
 
-import { useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import MovieCard, { Movie } from "./MovieCard";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface MovieGridProps {
   title: string;
   movies: Movie[];
-  itemsPerPage?: number;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoading?: boolean;
+  sortOption?: string;
+  onSortChange?: (value: string) => void;
 }
 
-const MovieGrid = ({ title, movies, itemsPerPage = 10 }: MovieGridProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(movies.length / itemsPerPage);
+const MovieGrid = ({ 
+  title, 
+  movies, 
+  onLoadMore, 
+  hasMore = false, 
+  isLoading = false,
+  sortOption = "rating",
+  onSortChange
+}: MovieGridProps) => {
+  const observer = useRef<IntersectionObserver | null>(null);
   
-  // Calculate the current page's movies
-  const indexOfLastMovie = currentPage * itemsPerPage;
-  const indexOfFirstMovie = indexOfLastMovie - itemsPerPage;
-  const currentMovies = movies.slice(indexOfFirstMovie, indexOfLastMovie);
-
-  // Handle previous page click
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(current => current - 1);
-    }
-  };
-
-  // Handle next page click
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(current => current + 1);
-    }
-  };
+  // Reference for the last movie element for infinite scroll
+  const lastMovieElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (isLoading) return;
+    
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && onLoadMore) {
+        onLoadMore();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, onLoadMore]);
 
   return (
     <section className="py-8">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-white">{title}</h2>
-          <span className="text-sm text-gray-400">Showing {indexOfFirstMovie + 1}-{Math.min(indexOfLastMovie, movies.length)} of {movies.length}</span>
+          
+          {onSortChange && (
+            <div className="w-40">
+              <Select 
+                value={sortOption} 
+                onValueChange={onSortChange}
+              >
+                <SelectTrigger className="bg-cinema-dark-gray/50 border-cinema-dark-gray text-white">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rating">Highest Rating</SelectItem>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {currentMovies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
+          {movies.map((movie, index) => {
+            if (movies.length === index + 1) {
+              return (
+                <div ref={lastMovieElementRef} key={movie.id}>
+                  <MovieCard movie={movie} />
+                </div>
+              );
+            } else {
+              return <MovieCard key={movie.id} movie={movie} />;
+            }
+          })}
         </div>
         
-        {totalPages > 1 && (
-          <Pagination className="mt-8">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={handlePreviousPage}
-                  className={cn(
-                    currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                  )}
-                />
-              </PaginationItem>
-              
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink 
-                    onClick={() => setCurrentPage(i + 1)}
-                    isActive={currentPage === i + 1}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={handleNextPage}
-                  className={cn(
-                    currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
-                  )}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+        {isLoading && (
+          <div className="w-full text-center py-4">
+            <p className="text-white">Loading more movies...</p>
+          </div>
         )}
       </div>
     </section>
