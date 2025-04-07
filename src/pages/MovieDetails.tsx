@@ -3,19 +3,53 @@ import { useParams } from "react-router-dom";
 import { Star, Clock, Calendar, Tag } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getMovieDetails } from "@/services/movieData";
+import { fetchMovieById } from "@/services/supabaseMovieService";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const movieId = parseInt(id || "0");
-  const movie = getMovieDetails(movieId);
+  const [movie, setMovie] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-  }, []);
+    
+    const loadMovie = async () => {
+      try {
+        setLoading(true);
+        const movieData = await fetchMovieById(movieId);
+        setMovie(movieData);
+      } catch (error) {
+        console.error("Error loading movie details:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load movie details. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadMovie();
+  }, [movieId, toast]);
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+        <Navbar />
+        <div className="flex flex-grow items-center justify-center">
+          <h1 className="text-2xl text-white">Loading movie details...</h1>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
   
   if (!movie) {
     return (
@@ -84,7 +118,7 @@ const MovieDetails = () => {
               <div className="mb-6 animate-slide-up">
                 <h3 className="text-white font-semibold mb-2">Genres</h3>
                 <div className="flex flex-wrap gap-2">
-                  {movie.genres.map(genre => (
+                  {movie.genres.map((genre: string) => (
                     <span key={genre} className="bg-cinema-dark-gray/50 px-3 py-1 rounded-full text-white text-sm">
                       {genre}
                     </span>
@@ -97,21 +131,25 @@ const MovieDetails = () => {
                 <p className="text-gray-300">{movie.overview}</p>
               </div>
               
-              <div className="mb-6 animate-slide-up">
-                <h3 className="text-white font-semibold mb-2">Director</h3>
-                <p className="text-gray-300">{movie.director}</p>
-              </div>
-              
-              <div className="mb-8 animate-slide-up">
-                <h3 className="text-white font-semibold mb-2">Cast</h3>
-                <div className="flex flex-wrap gap-2">
-                  {movie.cast.map(actor => (
-                    <span key={actor} className="bg-cinema-dark-gray/50 px-3 py-1 rounded-full text-white text-sm">
-                      {actor}
-                    </span>
-                  ))}
+              {movie.director && (
+                <div className="mb-6 animate-slide-up">
+                  <h3 className="text-white font-semibold mb-2">Director</h3>
+                  <p className="text-gray-300">{movie.director}</p>
                 </div>
-              </div>
+              )}
+              
+              {movie.cast && movie.cast.length > 0 && (
+                <div className="mb-8 animate-slide-up">
+                  <h3 className="text-white font-semibold mb-2">Cast</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {movie.cast.map((actor: string) => (
+                      <span key={actor} className="bg-cinema-dark-gray/50 px-3 py-1 rounded-full text-white text-sm">
+                        {actor}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="flex flex-wrap gap-4 animate-slide-up">
                 <Button className="bg-cinema-gold hover:bg-cinema-gold/90 text-black">
