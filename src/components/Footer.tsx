@@ -7,17 +7,16 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-cinema-gold font-bold text-xl mb-4">CineGems</h3>
+            <h3 className="text-cinema-gold font-bold text-xl mb-4">Felem</h3>
             <p className="text-gray-400">Discover and curate the best movies from around the world.</p>
           </div>
           
           <div>
             <h4 className="text-white font-semibold mb-4">Browse</h4>
             <ul className="space-y-2">
-              <li><Link to="/collections" className="text-gray-400 hover:text-cinema-gold transition">Collections</Link></li>
-              <li><Link to="/genres" className="text-gray-400 hover:text-cinema-gold transition">Genres</Link></li>
-              <li><Link to="/directors" className="text-gray-400 hover:text-cinema-gold transition">Directors</Link></li>
-              <li><Link to="/years" className="text-gray-400 hover:text-cinema-gold transition">Years</Link></li>
+              <li><Link to="/movies" className="text-gray-400 hover:text-cinema-gold transition">All Movies</Link></li>
+              <li><Link to="/cinemas" className="text-gray-400 hover:text-cinema-gold transition">Cinemas</Link></li>
+              <li><Link to="/showtimes" className="text-gray-400 hover:text-cinema-gold transition">Showtimes</Link></li>
             </ul>
           </div>
           
@@ -43,7 +42,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-cinema-dark-gray mt-8 pt-8 text-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} CineGems. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Felem. All rights reserved.</p>
         </div>
       </div>
     </footer>
