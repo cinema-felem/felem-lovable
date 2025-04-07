@@ -1,15 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
-
-export interface Movie {
-  id: number;
-  title: string;
-  posterPath: string;
-  releaseYear: string;
-  rating: number;
-  genres: string[];
-}
+import { Movie } from "./MovieCard.d";
 
 interface MovieCardProps {
   movie: Movie;
