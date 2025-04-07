@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Movie } from "@/components/MovieCard";
+import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
 
 // Define TypeScript types for our database tables

@@ -1,5 +1,4 @@
-
-import { Movie } from "@/components/MovieCard";
+import { Movie } from "@/components/MovieCard.d";
 
 // Featured movie for hero section
 export const featuredMovie = {

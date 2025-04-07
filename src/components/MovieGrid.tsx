@@ -1,6 +1,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import MovieCard, { Movie } from "./MovieCard";
+import MovieCard from "./MovieCard";
+import { Movie } from "./MovieCard.d";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";

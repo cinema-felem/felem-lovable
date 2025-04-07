@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import MovieGrid from "@/components/MovieGrid";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Movie } from "@/components/MovieCard";
+import { Movie } from "@/components/MovieCard.d";
 import { fetchPopularMovies } from "@/services/supabaseMovieService";
 
 const Movies = () => {

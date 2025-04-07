@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import MovieCard, { Movie } from "@/components/MovieCard";
+import MovieCard from "@/components/MovieCard";
+import { Movie } from "@/components/MovieCard.d";
 import { searchMovies } from "@/services/supabaseMovieService";
 import { useToast } from "@/hooks/use-toast";
 
