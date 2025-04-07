@@ -66,9 +66,21 @@ const Index = () => {
             </div>
           ) : (
             <>
-              <MovieGrid title="Popular Movies" movies={popularMovies} />
-              <MovieGrid title="Top Rated" movies={topRatedMovies} />
-              <MovieGrid title="Trending Now" movies={trendingMovies} />
+              <MovieGrid 
+                title="Popular Movies" 
+                movies={popularMovies} 
+                itemsPerPage={10} 
+              />
+              <MovieGrid 
+                title="Top Rated" 
+                movies={topRatedMovies} 
+                itemsPerPage={10} 
+              />
+              <MovieGrid 
+                title="Trending Now" 
+                movies={trendingMovies} 
+                itemsPerPage={10} 
+              />
             </>
           )}
         </div>

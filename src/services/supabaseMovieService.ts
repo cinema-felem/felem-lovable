@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard";
 import { Database } from "@/integrations/supabase/types";
@@ -26,8 +25,7 @@ export async function fetchPopularMovies(): Promise<Movie[]> {
   const { data, error } = await supabase
     .from('tmdb')
     .select('id, title, image, release_date, ratings, genres')
-    .order('ratings->tmdb', { ascending: false })
-    .limit(10);
+    .order('ratings->tmdb', { ascending: false });
 
   if (error) {
     console.error('Error fetching popular movies:', error);
@@ -41,8 +39,7 @@ export async function fetchTopRatedMovies(): Promise<Movie[]> {
   const { data, error } = await supabase
     .from('tmdb')
     .select('id, title, image, release_date, ratings, genres')
-    .order('ratings->tmdb', { ascending: false })
-    .limit(10);
+    .order('ratings->tmdb', { ascending: false });
 
   if (error) {
     console.error('Error fetching top rated movies:', error);
@@ -55,8 +52,7 @@ export async function fetchTopRatedMovies(): Promise<Movie[]> {
 export async function fetchTrendingMovies(): Promise<Movie[]> {
   const { data, error } = await supabase
     .from('tmdb')
-    .select('id, title, image, release_date, ratings, genres')
-    .limit(10);
+    .select('id, title, image, release_date, ratings, genres');
 
   if (error) {
     console.error('Error fetching trending movies:', error);
