@@ -14,7 +14,7 @@ export interface Showtime {
 
 export async function fetchShowtimesForMovie(movieId: string): Promise<Showtime[]> {
   try {
-    // First, get all showtimes for this movie
+    // First, get all showtimes for this movie using filmId column
     const { data: showtimes, error } = await supabase
       .from('Showtime')
       .select('*, Cinema(name)')
@@ -27,17 +27,21 @@ export async function fetchShowtimesForMovie(movieId: string): Promise<Showtime[
     }
     
     if (!showtimes || showtimes.length === 0) {
+      console.info(`No showtimes found for movie with ID: ${movieId}`);
       return [];
     }
     
     // Transform the data to match our interface
     return showtimes.map((showtime) => {
+      // Format the time from Unix timestamp
+      const dateObj = new Date(showtime.unixTime * 1000);
+      
       return {
         id: showtime.id,
         cinemaId: showtime.cinemaId,
         cinemaName: showtime.Cinema?.name || 'Unknown Cinema',
         date: new Date(showtime.unixTime * 1000).toISOString().split('T')[0],
-        time: showtime.unixTime.toString(),
+        time: showtime.unixTime.toString(), // Keep the unix timestamp for precise sorting
         movieFormat: showtime.movieFormat,
         ticketType: showtime.ticketType,
         link: showtime.link,

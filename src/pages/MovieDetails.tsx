@@ -31,7 +31,7 @@ interface Showtime {
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const movieId = parseInt(id || "0");
+  const movieId = id || "0";  // Use string ID from params directly
   const [movie, setMovie] = useState<any>(null);
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,11 +44,12 @@ const MovieDetails = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const movieData = await fetchMovieById(movieId);
+        const movieData = await fetchMovieById(parseInt(movieId));
         setMovie(movieData);
         
         if (movieData) {
-          const showtimesData = await fetchShowtimesForMovie(movieId.toString());
+          // Pass the movie ID directly to fetch showtimes
+          const showtimesData = await fetchShowtimesForMovie(movieId);
           setShowtimes(showtimesData);
         }
       } catch (error) {
