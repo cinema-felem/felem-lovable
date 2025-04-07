@@ -14,9 +14,8 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-semibold mb-4">Browse</h4>
             <ul className="space-y-2">
-              <li><Link to="/movies" className="text-gray-400 hover:text-cinema-gold transition">All Movies</Link></li>
+              <li><Link to="/" className="text-gray-400 hover:text-cinema-gold transition">Home</Link></li>
               <li><Link to="/cinemas" className="text-gray-400 hover:text-cinema-gold transition">Cinemas</Link></li>
-              <li><Link to="/showtimes" className="text-gray-400 hover:text-cinema-gold transition">Showtimes</Link></li>
             </ul>
           </div>
           

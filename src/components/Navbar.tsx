@@ -24,9 +24,7 @@ const Navbar = () => {
         
         <div className="hidden md:flex items-center space-x-6">
           <Link to="/" className="text-white hover:text-cinema-gold transition">Home</Link>
-          <Link to="/movies" className="text-white hover:text-cinema-gold transition">Movies</Link>
           <Link to="/cinemas" className="text-white hover:text-cinema-gold transition">Cinemas</Link>
-          <Link to="/showtimes" className="text-white hover:text-cinema-gold transition">Showtimes</Link>
         </div>
         
         <form onSubmit={handleSearch} className="relative w-full max-w-xs">

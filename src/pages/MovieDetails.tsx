@@ -1,14 +1,16 @@
 
 import { useParams } from "react-router-dom";
-import { Star, StarHalf, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart } from "lucide-react";
+import { Star, StarHalf, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { fetchMovieById } from "@/services/supabaseMovieService";
+import { fetchShowtimesForMovie } from "@/services/showtimeService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 interface RatingSource {
   source: string;
@@ -16,10 +18,22 @@ interface RatingSource {
   votes?: number;
 }
 
+interface Showtime {
+  id: number;
+  cinemaId: string;
+  cinemaName: string;
+  date: string;
+  time: string;
+  movieFormat: string;
+  ticketType: string;
+  link: string;
+}
+
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const movieId = parseInt(id || "0");
   const [movie, setMovie] = useState<any>(null);
+  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
@@ -27,11 +41,16 @@ const MovieDetails = () => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
     
-    const loadMovie = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         const movieData = await fetchMovieById(movieId);
         setMovie(movieData);
+        
+        if (movieData) {
+          const showtimesData = await fetchShowtimesForMovie(movieId.toString());
+          setShowtimes(showtimesData);
+        }
       } catch (error) {
         console.error("Error loading movie details:", error);
         toast({
@@ -44,7 +63,7 @@ const MovieDetails = () => {
       }
     };
     
-    loadMovie();
+    loadData();
   }, [movieId, toast]);
   
   if (loading) {
@@ -70,6 +89,15 @@ const MovieDetails = () => {
       </div>
     );
   }
+  
+  // Group showtimes by cinema
+  const showtimesByCinema = showtimes.reduce((acc, showtime) => {
+    if (!acc[showtime.cinemaName]) {
+      acc[showtime.cinemaName] = [];
+    }
+    acc[showtime.cinemaName].push(showtime);
+    return acc;
+  }, {} as Record<string, Showtime[]>);
   
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
@@ -243,6 +271,58 @@ const MovieDetails = () => {
               )}
             </div>
           </div>
+          
+          {/* Showtimes Section */}
+          {Object.keys(showtimesByCinema).length > 0 && (
+            <div className="mt-12 mb-16 animate-slide-up">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <Ticket className="w-6 h-6 mr-2 text-cinema-gold" />
+                Showtimes
+              </h2>
+              
+              <div className="space-y-8">
+                {Object.entries(showtimesByCinema).map(([cinemaName, cinemaTimes]) => (
+                  <div key={cinemaName} className="bg-cinema-dark-gray/30 rounded-lg p-5">
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                      <Map className="w-5 h-5 mr-2 text-cinema-gold" />
+                      {cinemaName}
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {cinemaTimes.map((showtime) => {
+                        const unixTime = parseInt(showtime.time);
+                        const date = new Date(unixTime * 1000);
+                        
+                        return (
+                          <a 
+                            key={showtime.id} 
+                            href={showtime.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="bg-cinema-dark-gray/50 rounded p-3 hover:bg-cinema-dark-gray transition-colors"
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-cinema-gold font-medium">
+                                {format(date, 'h:mm a')}
+                              </span>
+                              <span className="text-gray-400 text-sm">
+                                {format(date, 'EEE, MMM d')}
+                              </span>
+                              {showtime.movieFormat && (
+                                <Badge className="mt-2 w-fit bg-cinema-dark-blue/70 text-white">
+                                  {showtime.movieFormat}
+                                </Badge>
+                              )}
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
       
