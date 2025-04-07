@@ -1,14 +1,16 @@
+
 import { useParams } from "react-router-dom";
-import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket } from "lucide-react";
+import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket, CalendarIcon, MapPin, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { fetchMovieById } from "@/services/supabaseMovieService";
-import { fetchShowtimesForMovie } from "@/services/showtimeService";
+import { fetchShowtimesForMovie, fetchCinemasWithShowtimesForMovie, fetchAvailableDatesForMovie, CinemaOption } from "@/services/showtimeService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import ShowtimeFilter from "@/components/ShowtimeFilter";
 
 interface RatingSource {
   source: string;
@@ -32,6 +34,10 @@ const MovieDetails = () => {
   const movieId = id || ""; // Use UUID format ID from Movie table
   const [movie, setMovie] = useState<any>(null);
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [cinemas, setCinemas] = useState<CinemaOption[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedCinemaId, setSelectedCinemaId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
@@ -47,8 +53,25 @@ const MovieDetails = () => {
         setMovie(movieData);
         
         if (movieData) {
-          // Pass the movie UUID to fetch showtimes
-          const showtimesData = await fetchShowtimesForMovie(movieId);
+          // Fetch available dates for the movie
+          const datesData = await fetchAvailableDatesForMovie(movieId);
+          setAvailableDates(datesData);
+          
+          // Set default selected date to the first available date
+          if (datesData.length > 0) {
+            setSelectedDate(datesData[0]);
+          }
+          
+          // Fetch cinemas showing this movie
+          const cinemasData = await fetchCinemasWithShowtimesForMovie(movieId);
+          setCinemas(cinemasData);
+          
+          // Pass the movie UUID to fetch showtimes with the selected filters
+          const showtimesData = await fetchShowtimesForMovie(
+            movieId, 
+            datesData.length > 0 ? datesData[0] : undefined,
+            undefined
+          );
           setShowtimes(showtimesData);
         }
       } catch (error) {
@@ -65,6 +88,42 @@ const MovieDetails = () => {
     
     loadData();
   }, [movieId, toast]);
+  
+  // Effect to update showtimes when filters change
+  useEffect(() => {
+    const updateShowtimes = async () => {
+      if (!movieId) return;
+      
+      try {
+        const showtimesData = await fetchShowtimesForMovie(
+          movieId,
+          selectedDate,
+          selectedCinemaId
+        );
+        setShowtimes(showtimesData);
+      } catch (error) {
+        console.error("Error updating showtimes:", error);
+      }
+    };
+    
+    // Only run if the movie has been loaded
+    if (movie) {
+      updateShowtimes();
+    }
+  }, [movieId, selectedDate, selectedCinemaId, movie]);
+  
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+  
+  const handleCinemaChange = (cinemaId: string | undefined) => {
+    setSelectedCinemaId(cinemaId);
+  };
+  
+  const clearFilters = () => {
+    setSelectedDate(availableDates.length > 0 ? availableDates[0] : undefined);
+    setSelectedCinemaId(undefined);
+  };
   
   if (loading) {
     return (
@@ -97,6 +156,8 @@ const MovieDetails = () => {
     acc[showtime.cinemaName].push(showtime);
     return acc;
   }, {} as Record<string, Showtime[]>);
+  
+  const hasActiveFilters = selectedCinemaId !== undefined;
   
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
@@ -267,12 +328,36 @@ const MovieDetails = () => {
             </div>
           </div>
           
-          {Object.keys(showtimesByCinema).length > 0 && (
+          {showtimes.length > 0 && (
             <div className="mt-12 mb-16 animate-slide-up">
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
                 <Ticket className="w-6 h-6 mr-2 text-cinema-gold" />
                 Showtimes
               </h2>
+              
+              <div className="mb-6">
+                <ShowtimeFilter 
+                  availableDates={availableDates}
+                  cinemas={cinemas}
+                  selectedDate={selectedDate}
+                  selectedCinemaId={selectedCinemaId}
+                  onDateChange={handleDateChange}
+                  onCinemaChange={handleCinemaChange}
+                />
+                
+                {hasActiveFilters && (
+                  <div className="flex items-center mt-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={clearFilters}
+                      className="text-cinema-gold hover:text-cinema-gold/80 hover:bg-cinema-dark-gray/30"
+                    >
+                      <X className="h-4 w-4 mr-1" /> Clear filters
+                    </Button>
+                  </div>
+                )}
+              </div>
               
               <div className="space-y-8">
                 {Object.entries(showtimesByCinema).map(([cinemaName, cinemaTimes]) => (
@@ -315,6 +400,19 @@ const MovieDetails = () => {
                   </div>
                 ))}
               </div>
+              
+              {showtimes.length === 0 && (
+                <div className="bg-cinema-dark-gray/30 rounded-lg p-5 text-center">
+                  <p className="text-white">No showtimes found for the selected filters.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-3 border-cinema-gold text-cinema-gold hover:bg-cinema-gold/10"
+                    onClick={clearFilters}
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
