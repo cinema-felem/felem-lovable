@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Showtime {
@@ -14,7 +13,7 @@ export interface Showtime {
 
 export async function fetchShowtimesForMovie(movieId: string): Promise<Showtime[]> {
   try {
-    // First, get all showtimes for this movie using filmId column
+    // Get showtimes for this movie using filmId column which is a UUID from the Movie table
     const { data: showtimes, error } = await supabase
       .from('Showtime')
       .select('*, Cinema(name)')

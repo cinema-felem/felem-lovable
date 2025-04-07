@@ -1,13 +1,11 @@
-
 import { useParams } from "react-router-dom";
-import { Star, StarHalf, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket } from "lucide-react";
+import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { fetchMovieById } from "@/services/supabaseMovieService";
 import { fetchShowtimesForMovie } from "@/services/showtimeService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -31,7 +29,7 @@ interface Showtime {
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const movieId = id || "0";  // Use string ID from params directly
+  const movieId = id || ""; // Use UUID format ID from Movie table
   const [movie, setMovie] = useState<any>(null);
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,11 +42,12 @@ const MovieDetails = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const movieData = await fetchMovieById(parseInt(movieId));
+        // Use the UUID string directly without parsing
+        const movieData = await fetchMovieById(movieId);
         setMovie(movieData);
         
         if (movieData) {
-          // Pass the movie ID directly to fetch showtimes
+          // Pass the movie UUID to fetch showtimes
           const showtimesData = await fetchShowtimesForMovie(movieId);
           setShowtimes(showtimesData);
         }
@@ -91,7 +90,6 @@ const MovieDetails = () => {
     );
   }
   
-  // Group showtimes by cinema
   const showtimesByCinema = showtimes.reduce((acc, showtime) => {
     if (!acc[showtime.cinemaName]) {
       acc[showtime.cinemaName] = [];
@@ -105,7 +103,6 @@ const MovieDetails = () => {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Backdrop with gradient overlay */}
         <div className="relative h-[70vh] min-h-[500px] w-full">
           <div 
             className="absolute inset-0 bg-center bg-cover"
@@ -115,10 +112,8 @@ const MovieDetails = () => {
           </div>
         </div>
         
-        {/* Movie details section */}
         <div className="container mx-auto px-4 -mt-48 relative z-10">
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Poster */}
             <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
               <img 
                 src={movie.posterPath} 
@@ -154,7 +149,6 @@ const MovieDetails = () => {
               </div>
             </div>
             
-            {/* Details */}
             <div className="flex-grow">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 text-shadow animate-slide-up">
                 {movie.title}
@@ -273,7 +267,6 @@ const MovieDetails = () => {
             </div>
           </div>
           
-          {/* Showtimes Section */}
           {Object.keys(showtimesByCinema).length > 0 && (
             <div className="mt-12 mb-16 animate-slide-up">
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center">

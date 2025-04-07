@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard";
 import { Database } from "@/integrations/supabase/types";
@@ -30,39 +29,113 @@ interface StreamingJson {
 }
 
 export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'): Promise<{movies: Movie[], hasMore: boolean}> {
+  // First get movie IDs from the Movie table
   let query = supabase
-    .from('tmdb')
-    .select('id, title, image, release_date, ratings, genres');
+    .from('Movie')
+    .select('id, title, tmdbId');
   
-  // Apply sorting based on the option
-  if (sortBy === 'rating') {
-    query = query.order('ratings->tmdb', { ascending: false });
-  } else if (sortBy === 'recent') {
-    query = query.order('release_date', { ascending: false });
-  }
-  
-  // Add pagination
+  // Apply pagination
   const from = page * limit;
   const to = from + limit - 1;
   
   // Fetch one extra item to determine if there are more items
-  const { data, error } = await query
+  const { data: movieData, error: movieError } = await query
     .range(from, to + 1);
 
-  if (error) {
-    console.error('Error fetching popular movies:', error);
+  if (movieError || !movieData || movieData.length === 0) {
+    console.error('Error fetching popular movies:', movieError);
     return { movies: [], hasMore: false };
   }
-  
+
   // Check if we got an extra item (indicating there are more)
-  const hasMore = data && data.length > limit;
+  const hasMore = movieData && movieData.length > limit;
   // Remove the extra item if it exists
-  const paginatedData = hasMore ? data.slice(0, limit) : data;
+  const paginatedData = hasMore ? movieData.slice(0, limit) : movieData;
   
-  return { 
-    movies: transformTmdbToMovies(paginatedData || []),
-    hasMore
-  };
+  // Extract tmdbIds for fetching additional metadata
+  const tmdbIds = paginatedData
+    .filter(movie => movie.tmdbId !== null)
+    .map(movie => movie.tmdbId as number);
+  
+  if (tmdbIds.length === 0) {
+    // Return basic movie data if no tmdbIds are available
+    return { 
+      movies: paginatedData.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+        releaseYear: "",
+        rating: 0,
+        genres: [],
+      })),
+      hasMore 
+    };
+  }
+  
+  // Fetch metadata from tmdb table
+  const { data: tmdbData, error: tmdbError } = await supabase
+    .from('tmdb')
+    .select('id, title, image, release_date, ratings, genres')
+    .in('id', tmdbIds);
+  
+  if (tmdbError) {
+    console.error('Error fetching tmdb metadata:', tmdbError);
+    // Return basic movie data if tmdb fetch fails
+    return { 
+      movies: paginatedData.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+        releaseYear: "",
+        rating: 0,
+        genres: [],
+      })),
+      hasMore 
+    };
+  }
+  
+  // Create a mapping of tmdbId to tmdb metadata
+  const tmdbMap = new Map();
+  tmdbData?.forEach(tmdb => {
+    tmdbMap.set(tmdb.id, tmdb);
+  });
+  
+  // Combine Movie and tmdb data
+  const movies = paginatedData.map(movie => {
+    const tmdb = movie.tmdbId ? tmdbMap.get(movie.tmdbId) : null;
+    
+    if (!tmdb) {
+      return {
+        id: movie.id,
+        title: movie.title,
+        posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+        releaseYear: "",
+        rating: 0,
+        genres: [],
+      };
+    }
+    
+    const image = tmdb.image as ImageJson | null;
+    const ratings = tmdb.ratings as RatingsJson[] | null;
+    const genres = tmdb.genres as GenreJson[] | null;
+    
+    const rating = ratings && ratings.length > 0 ? 
+      ratings.find(r => r.source === 'The Movie Database')?.rating || 
+      ratings[0].rating || 0 : 0;
+    
+    return {
+      id: movie.id,
+      title: movie.title,
+      posterPath: image?.poster_path 
+        ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
+        : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+      releaseYear: tmdb.release_date ? new Date(tmdb.release_date).getFullYear().toString() : "",
+      rating: rating,
+      genres: genres ? genres.map((genre) => genre.name || '') : [],
+    };
+  });
+  
+  return { movies, hasMore };
 }
 
 export async function fetchTopRatedMovies(): Promise<Movie[]> {
@@ -92,24 +165,61 @@ export async function fetchTrendingMovies(): Promise<Movie[]> {
   return transformTmdbToMovies(data || []);
 }
 
-export async function fetchMovieById(id: number) {
-  const { data, error } = await supabase
-    .from('tmdb')
-    .select('*, external_ids, streaming')
+export async function fetchMovieById(id: string) {
+  // Fetch the movie from the Movie table
+  const { data: movieData, error: movieError } = await supabase
+    .from('Movie')
+    .select('*, tmdbId')
     .eq('id', id)
     .single();
 
-  if (error) {
-    console.error('Error fetching movie by ID:', error);
+  if (movieError) {
+    console.error('Error fetching movie by ID:', movieError);
     return null;
   }
 
-  if (!data) return null;
+  if (!movieData) return null;
+  
+  // If there's no tmdbId, return basic movie info
+  if (!movieData.tmdbId) {
+    return {
+      id: movieData.id,
+      title: movieData.title,
+      posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+      releaseYear: "",
+      rating: 0,
+      genres: [],
+      overview: "No overview available",
+      backdrop: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
+    };
+  }
+  
+  // Fetch additional metadata from tmdb table
+  const { data: tmdbData, error: tmdbError } = await supabase
+    .from('tmdb')
+    .select('*, external_ids, streaming')
+    .eq('id', movieData.tmdbId)
+    .single();
+  
+  if (tmdbError || !tmdbData) {
+    console.error('Error fetching tmdb data:', tmdbError);
+    // Return basic movie info if tmdb fetch fails
+    return {
+      id: movieData.id,
+      title: movieData.title,
+      posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
+      releaseYear: "",
+      rating: 0,
+      genres: [],
+      overview: "No overview available",
+      backdrop: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
+    };
+  }
 
-  const image = data.image as ImageJson | null;
-  const ratings = data.ratings as RatingsJson[] | null;
-  const genres = data.genres as GenreJson[] | null;
-  const streaming = data.streaming as StreamingJson | null;
+  const image = tmdbData.image as ImageJson | null;
+  const ratings = tmdbData.ratings as RatingsJson[] | null;
+  const genres = tmdbData.genres as GenreJson[] | null;
+  const streaming = tmdbData.streaming as StreamingJson | null;
 
   // Extract all available ratings
   const allRatings = ratings ? ratings.map(rating => ({
@@ -122,13 +232,14 @@ export async function fetchMovieById(id: number) {
   const streamingProviders = streaming?.providers || [];
 
   return {
-    id: data.id,
-    title: data.title,
-    originalTitle: data.original_title,
-    originalLanguage: data.original_language,
+    id: movieData.id,
+    tmdbId: tmdbData.id,
+    title: movieData.title,
+    originalTitle: tmdbData.original_title,
+    originalLanguage: tmdbData.original_language,
     posterPath: image?.poster_path ? `https://image.tmdb.org/t/p/w500${image.poster_path}` : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
-    releaseYear: data.release_date ? new Date(data.release_date).getFullYear().toString() : "",
-    releaseDate: data.release_date,
+    releaseYear: tmdbData.release_date ? new Date(tmdbData.release_date).getFullYear().toString() : "",
+    releaseDate: tmdbData.release_date,
     rating: ratings && ratings.length > 0 ? 
       ratings.find(r => r.source === 'The Movie Database')?.rating || 
       ratings[0].rating || 0 : 0,
@@ -136,12 +247,14 @@ export async function fetchMovieById(id: number) {
     genres: genres ? genres.map((genre) => genre.name || '') : [],
     director: "Director information not available",
     cast: ["Cast information not available"],
-    runtime: data.runtime ? `${data.runtime} min` : "Unknown",
-    overview: data.overview || "No overview available",
+    runtime: tmdbData.runtime ? `${tmdbData.runtime} min` : "Unknown",
+    overview: tmdbData.overview || "No overview available",
     backdrop: image?.backdrop_path ? `https://image.tmdb.org/t/p/original${image.backdrop_path}` : "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
-    parental: data.parental,
+    parental: tmdbData.parental,
     streamingProviders: streamingProviders,
-    originCountry: data.origin_country,
+    originCountry: tmdbData.origin_country,
+    language: movieData.language,
+    format: movieData.format,
   };
 }
 
