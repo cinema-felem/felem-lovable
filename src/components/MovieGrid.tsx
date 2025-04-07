@@ -2,6 +2,7 @@
 import { useState } from "react";
 import MovieCard, { Movie } from "./MovieCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
+import { cn } from "@/lib/utils";
 
 interface MovieGridProps {
   title: string;
@@ -17,6 +18,20 @@ const MovieGrid = ({ title, movies, itemsPerPage = 10 }: MovieGridProps) => {
   const indexOfLastMovie = currentPage * itemsPerPage;
   const indexOfFirstMovie = indexOfLastMovie - itemsPerPage;
   const currentMovies = movies.slice(indexOfFirstMovie, indexOfLastMovie);
+
+  // Handle previous page click
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(current => current - 1);
+    }
+  };
+
+  // Handle next page click
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(current => current + 1);
+    }
+  };
 
   return (
     <section className="py-8">
@@ -37,9 +52,10 @@ const MovieGrid = ({ title, movies, itemsPerPage = 10 }: MovieGridProps) => {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious 
-                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  onClick={handlePreviousPage}
+                  className={cn(
+                    currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  )}
                 />
               </PaginationItem>
               
@@ -56,9 +72,10 @@ const MovieGrid = ({ title, movies, itemsPerPage = 10 }: MovieGridProps) => {
               
               <PaginationItem>
                 <PaginationNext 
-                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  onClick={handleNextPage}
+                  className={cn(
+                    currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  )}
                 />
               </PaginationItem>
             </PaginationContent>
