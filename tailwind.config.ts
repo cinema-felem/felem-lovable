@@ -69,6 +69,18 @@ export default {
 					"light-blue": "#38BDF8",
 					"red": "#EF4444",
 					"dark-gray": "#1E293B"
+				},
+				status: {
+					"merge": "#1E40AF", // Darker blue for better contrast
+					"merge-bg": "#DBEAFE", // Light blue background
+					"delete": "#B91C1C", // Darker red for better contrast
+					"delete-bg": "#FEE2E2", // Light red background
+					"create": "#15803D", // Darker green for better contrast
+					"create-bg": "#DCFCE7", // Light green background
+					"transform": "#6D28D9", // Darker purple for better contrast
+					"transform-bg": "#F3E8FF", // Light purple background
+					"update": "#0F766E", // Darker teal for better contrast
+					"update-bg": "#CCFBF1" // Light teal background
 				}
 			},
 			borderRadius: {

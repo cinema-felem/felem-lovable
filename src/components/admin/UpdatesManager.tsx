@@ -69,6 +69,11 @@ export function UpdatesManager() {
   const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Define available operations - now limited to MERGE and DELETE for updates
+  const availableOperations = ["MERGE", "DELETE"];
+  // Full operations list for filtering
+  const allOperations = ["MERGE", "DELETE", "CREATE", "TRANSFORM", "UPDATE"];
+  
   useEffect(() => {
     fetchUpdates();
   }, [currentPage, itemsPerPage, sortField, sortDirection, filterModel, filterOperation]);
@@ -227,7 +232,6 @@ export function UpdatesManager() {
   }
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const operationOptions = ["CREATE", "UPDATE", "DELETE", "TRANSFORM"];
 
   return (
     <div className="space-y-6">
@@ -265,7 +269,7 @@ export function UpdatesManager() {
                       <SelectValue placeholder="Select operation" />
                     </SelectTrigger>
                     <SelectContent>
-                      {operationOptions.map(op => (
+                      {allOperations.map(op => (
                         <SelectItem key={op} value={op}>{op}</SelectItem>
                       ))}
                     </SelectContent>
@@ -358,7 +362,7 @@ export function UpdatesManager() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-operations">All operations</SelectItem>
-                  {operationOptions.map(op => (
+                  {allOperations.map(op => (
                     <SelectItem key={op} value={op}>{op}</SelectItem>
                   ))}
                 </SelectContent>
@@ -449,7 +453,13 @@ export function UpdatesManager() {
                 <TableRow key={update.id}>
                   <TableCell className="font-medium">{update.modelName}</TableCell>
                   <TableCell>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      update.operation === 'MERGE' ? 'bg-blue-100 text-blue-800' : 
+                      update.operation === 'DELETE' ? 'bg-red-100 text-red-800' :
+                      update.operation === 'CREATE' ? 'bg-green-100 text-green-800' :
+                      update.operation === 'TRANSFORM' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
                       {update.operation}
                     </span>
                   </TableCell>
@@ -459,7 +469,7 @@ export function UpdatesManager() {
                   </TableCell>
                   <TableCell>
                     {update.destinationField && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs font-medium text-gray-700">
                         {update.destinationField}
                       </span>
                     )}
@@ -500,7 +510,7 @@ export function UpdatesManager() {
                                       <SelectValue placeholder="Select operation" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {operationOptions.map(op => (
+                                      {availableOperations.map(op => (
                                         <SelectItem key={op} value={op}>{op}</SelectItem>
                                       ))}
                                     </SelectContent>
@@ -524,6 +534,7 @@ export function UpdatesManager() {
                                   value={editingUpdate.sourceText}
                                   onChange={(e) => setEditingUpdate({...editingUpdate, sourceText: e.target.value})}
                                   rows={3}
+                                  className="text-gray-900"
                                 />
                               </div>
                               
@@ -543,6 +554,7 @@ export function UpdatesManager() {
                                   value={editingUpdate.destinationText || ""}
                                   onChange={(e) => setEditingUpdate({...editingUpdate, destinationText: e.target.value})}
                                   rows={3}
+                                  className="text-gray-900"
                                 />
                               </div>
                             </div>
