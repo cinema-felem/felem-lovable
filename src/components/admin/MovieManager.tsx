@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +39,6 @@ export function MovieManager() {
   const { toast } = useToast();
   const pageSize = 10;
 
-  // Fetch movies when the page or search changes
   useEffect(() => {
     fetchMovies();
   }, [currentPage, searchQuery]);
@@ -52,12 +50,10 @@ export function MovieManager() {
         .from('Movie')
         .select('*', { count: 'exact' });
       
-      // Apply search if provided
       if (searchQuery) {
         query = query.ilike('title', `%${searchQuery}%`);
       }
       
-      // Apply pagination
       const from = currentPage * pageSize;
       const to = from + pageSize - 1;
       
@@ -70,7 +66,7 @@ export function MovieManager() {
       const formattedMovies = data.map(movie => ({
         id: movie.id,
         title: movie.title,
-        posterPath: "", // We don't have this in the base table
+        posterPath: "",
         releaseYear: "",
         rating: 0,
         language: movie.language,
@@ -104,7 +100,6 @@ export function MovieManager() {
       isEditing: true
     };
     setMovies(updatedMovies);
-    // Create a copy for the temp state
     setTempMovies([...updatedMovies]);
   };
 
@@ -126,7 +121,6 @@ export function MovieManager() {
         
       if (error) throw error;
       
-      // Update the movies state with the edited movie
       const updatedMovies = [...movies];
       updatedMovies[index] = {
         ...movieToUpdate,
@@ -155,7 +149,6 @@ export function MovieManager() {
       isEditing: false
     };
     setMovies(updatedMovies);
-    // Restore from the original data
     setTempMovies(JSON.parse(JSON.stringify(updatedMovies)));
   };
 
@@ -172,7 +165,6 @@ export function MovieManager() {
         
       if (error) throw error;
       
-      // Remove the movie from the state
       const updatedMovies = [...movies];
       updatedMovies.splice(index, 1);
       setMovies(updatedMovies);
@@ -182,7 +174,6 @@ export function MovieManager() {
         description: "Movie deleted successfully",
       });
       
-      // Refresh the movie list if we deleted the last item on the page
       if (updatedMovies.length === 0 && currentPage > 0) {
         setCurrentPage(currentPage - 1);
       } else {
@@ -210,8 +201,8 @@ export function MovieManager() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-cinema-dark-blue">Movie Management</h2>
-        <Button variant="default" size="sm" className="flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-cinema-gold">Movie Management</h2>
+        <Button variant="default" size="sm" className="flex items-center gap-2 bg-cinema-dark-blue">
           <Plus size={16} /> Add Movie
         </Button>
       </div>
@@ -223,17 +214,17 @@ export function MovieManager() {
             placeholder="Search movies..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-cinema-dark-blue/10 border-cinema-dark-blue"
           />
         </div>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" className="border-cinema-dark-blue text-cinema-gold">
           <Filter className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
+      <div className="rounded-md border border-border overflow-hidden bg-background">
         <Table>
-          <TableHeader className="bg-gray-100">
+          <TableHeader>
             <TableRow>
               <TableHead className="font-semibold">Title</TableHead>
               <TableHead className="font-semibold">TMDB ID</TableHead>
@@ -247,25 +238,25 @@ export function MovieManager() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8">
                   <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cinema-gold"></div>
                   </div>
                 </TableCell>
               </TableRow>
             ) : movies.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No movies found
                 </TableCell>
               </TableRow>
             ) : (
               movies.map((movie, index) => (
-                <TableRow key={movie.id.toString()} className="hover:bg-gray-50">
+                <TableRow key={movie.id.toString()} className="border-b border-border">
                   <TableCell>
                     {movie.isEditing ? (
                       <Input
                         value={tempMovies[index].title}
                         onChange={(e) => handleInputChange(index, 'title', e.target.value)}
-                        className="min-w-[200px]"
+                        className="min-w-[200px] bg-cinema-dark-blue/10 border-cinema-dark-blue"
                       />
                     ) : (
                       movie.title
@@ -277,6 +268,7 @@ export function MovieManager() {
                         value={tempMovies[index].tmdbId || ''}
                         onChange={(e) => handleInputChange(index, 'tmdbId', e.target.value !== '' ? parseInt(e.target.value) : null)}
                         type="number"
+                        className="bg-cinema-dark-blue/10 border-cinema-dark-blue"
                       />
                     ) : (
                       movie.tmdbId || '-'
@@ -287,6 +279,7 @@ export function MovieManager() {
                       <Input
                         value={tempMovies[index].format || ''}
                         onChange={(e) => handleInputChange(index, 'format', e.target.value)}
+                        className="bg-cinema-dark-blue/10 border-cinema-dark-blue"
                       />
                     ) : (
                       movie.format || '-'
@@ -297,6 +290,7 @@ export function MovieManager() {
                       <Input
                         value={tempMovies[index].language || ''}
                         onChange={(e) => handleInputChange(index, 'language', e.target.value)}
+                        className="bg-cinema-dark-blue/10 border-cinema-dark-blue"
                       />
                     ) : (
                       movie.language || '-'
@@ -310,7 +304,7 @@ export function MovieManager() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleSaveMovie(index)}
-                            className="h-8 w-8 text-green-600"
+                            className="h-8 w-8 text-green-400 hover:text-green-300 hover:bg-cinema-dark-blue/20"
                           >
                             <Save className="h-4 w-4" />
                           </Button>
@@ -318,7 +312,7 @@ export function MovieManager() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleCancelEdit(index)}
-                            className="h-8 w-8 text-gray-500"
+                            className="h-8 w-8 text-gray-400 hover:text-gray-300 hover:bg-cinema-dark-blue/20"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -329,7 +323,7 @@ export function MovieManager() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleEditMovie(index)}
-                            className="h-8 w-8 text-blue-600"
+                            className="h-8 w-8 text-cinema-light-blue hover:text-cinema-light-blue/80 hover:bg-cinema-dark-blue/20"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -337,7 +331,7 @@ export function MovieManager() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteMovie(index)}
-                            className="h-8 w-8 text-red-600"
+                            className="h-8 w-8 text-cinema-red hover:text-cinema-red/80 hover:bg-cinema-dark-blue/20"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -358,7 +352,7 @@ export function MovieManager() {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => currentPage > 0 && setCurrentPage(currentPage - 1)}
-                className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-cinema-dark-blue/20"}
               />
             </PaginationItem>
             
@@ -367,7 +361,7 @@ export function MovieManager() {
                 <PaginationLink
                   isActive={currentPage === i}
                   onClick={() => setCurrentPage(i)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${currentPage === i ? "bg-cinema-dark-blue text-white" : "hover:bg-cinema-dark-blue/20"}`}
                 >
                   {i + 1}
                 </PaginationLink>
@@ -377,7 +371,7 @@ export function MovieManager() {
             <PaginationItem>
               <PaginationNext
                 onClick={() => currentPage < totalPages - 1 && setCurrentPage(currentPage + 1)}
-                className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-cinema-dark-blue/20"}
               />
             </PaginationItem>
           </PaginationContent>
