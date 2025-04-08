@@ -89,8 +89,8 @@ const VideoCard = ({ video }: VideoCardProps) => {
           <p className="mt-2 text-sm text-white line-clamp-1">{video.name}</p>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <div className="aspect-video w-full">
+      <DialogContent className="sm:max-w-none w-[90vw] md:w-[75vw] lg:w-[50vw] max-h-[90vh] p-0">
+        <div className="w-full h-full aspect-video">
           <iframe
             width="100%"
             height="100%"
