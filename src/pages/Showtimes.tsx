@@ -39,8 +39,8 @@ const Showtimes = () => {
       try {
         setLoading(true);
         
-        // Fetch showtimes with movie and cinema information
-        const { data, error } = await supabase
+        // First, fetch basic showtime data
+        const { data: showtimeData, error: showtimeError } = await supabase
           .from('Showtime')
           .select(`
             id, 
@@ -51,17 +51,78 @@ const Showtimes = () => {
             theatreFilmId,
             filmId,
             cinemaId,
-            film:Movie(title, tmdbTitle),
             cinema:Cinema(name, address)
           `)
           .order('unixTime', { ascending: true })
           .limit(20);
         
-        if (error) {
-          throw error;
+        if (showtimeError) {
+          throw showtimeError;
         }
         
-        setShowtimes(data || []);
+        if (!showtimeData || showtimeData.length === 0) {
+          setShowtimes([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Extract all filmIds to fetch movie titles
+        const filmIds = showtimeData.map(showtime => showtime.filmId);
+        
+        // Fetch movies data
+        const { data: moviesData, error: moviesError } = await supabase
+          .from('Movie')
+          .select('id, title, tmdbId')
+          .in('id', filmIds);
+        
+        if (moviesError) {
+          throw moviesError;
+        }
+        
+        // Create a map of movie data by id
+        const movieMap = new Map();
+        moviesData?.forEach(movie => {
+          movieMap.set(movie.id, { 
+            title: movie.title,
+            tmdbId: movie.tmdbId
+          });
+        });
+        
+        // Fetch TMDB titles for movies with tmdbId
+        const tmdbIds = moviesData
+          ?.filter(movie => movie.tmdbId)
+          .map(movie => movie.tmdbId) as number[];
+        
+        let tmdbTitleMap = new Map();
+        
+        if (tmdbIds && tmdbIds.length > 0) {
+          const { data: tmdbData, error: tmdbError } = await supabase
+            .from('tmdb')
+            .select('id, title')
+            .in('id', tmdbIds);
+          
+          if (!tmdbError && tmdbData) {
+            tmdbData.forEach(item => {
+              tmdbTitleMap.set(item.id, item.title);
+            });
+          }
+        }
+        
+        // Combine the data
+        const processedShowtimes = showtimeData.map(showtime => {
+          const movieInfo = movieMap.get(showtime.filmId);
+          const tmdbTitle = movieInfo?.tmdbId ? tmdbTitleMap.get(movieInfo.tmdbId) : undefined;
+          
+          return {
+            ...showtime,
+            film: {
+              title: movieInfo?.title || 'Unknown Movie',
+              tmdbTitle: tmdbTitle
+            }
+          };
+        });
+        
+        setShowtimes(processedShowtimes);
       } catch (error) {
         console.error("Error fetching showtimes:", error);
         toast({

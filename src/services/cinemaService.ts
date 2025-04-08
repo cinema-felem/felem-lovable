@@ -14,6 +14,7 @@ export interface CinemaShowtime {
   id: number;
   movieId: string;
   movieTitle: string;
+  tmdbTitle?: string;
   posterPath: string;
   date: string;
   time: string;
@@ -58,7 +59,7 @@ export async function fetchShowtimesForCinema(
         unixTime, 
         link,
         filmId,
-        Movie(id, title, tmdbId)
+        Movie(id, title)
       `)
       .eq('cinemaId', cinemaId)
       .order('unixTime', { ascending: true });
@@ -91,8 +92,53 @@ export async function fetchShowtimesForCinema(
     }
     
     // Fetch tmdb info for movies with tmdbId
+    const movieIds = data
+      .map(item => item.Movie?.id)
+      .filter(Boolean) as string[];
+    
+    let tmdbTitles: Record<string, string> = {};
+    if (movieIds.length > 0) {
+      const { data: movieData, error: movieError } = await supabase
+        .from('Movie')
+        .select('id, tmdbId')
+        .in('id', movieIds);
+      
+      if (!movieError && movieData) {
+        // Get tmdbIds to fetch TMDB titles
+        const tmdbIds = movieData
+          .filter(m => m.tmdbId)
+          .map(m => m.tmdbId as number);
+        
+        if (tmdbIds.length > 0) {
+          const { data: tmdbResults, error: tmdbError } = await supabase
+            .from('tmdb')
+            .select('id, title')
+            .in('id', tmdbIds);
+          
+          if (!tmdbError && tmdbResults) {
+            // Create a mapping of tmdbId to title
+            const tmdbTitleMap = new Map();
+            tmdbResults.forEach(item => {
+              tmdbTitleMap.set(item.id, item.title);
+            });
+            
+            // Map movie ids to tmdb titles
+            movieData.forEach(movie => {
+              if (movie.tmdbId && tmdbTitleMap.has(movie.tmdbId)) {
+                tmdbTitles[movie.id] = tmdbTitleMap.get(movie.tmdbId);
+              }
+            });
+          }
+        }
+      }
+    }
+    
+    // Fetch tmdb data for poster paths
     const tmdbIds = data
-      .map(item => item.Movie?.tmdbId)
+      .map(item => {
+        const movie = item.Movie;
+        return movie ? movie.tmdbId : null;
+      })
       .filter(Boolean) as number[];
     
     let tmdbData: any[] = [];
@@ -118,11 +164,13 @@ export async function fetchShowtimesForCinema(
       const showtime = new Date(item.unixTime * 1000);
       const tmdbInfo = item.Movie?.tmdbId ? tmdbLookup.get(item.Movie.tmdbId) : null;
       const image = tmdbInfo?.image as { poster_path?: string } | null;
+      const movieId = item.Movie?.id || '';
       
       return {
         id: item.id,
-        movieId: item.Movie?.id || '',
+        movieId: movieId,
         movieTitle: item.Movie?.title || 'Unknown Movie',
+        tmdbTitle: tmdbTitles[movieId] || undefined,
         posterPath: image?.poster_path 
           ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
           : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
