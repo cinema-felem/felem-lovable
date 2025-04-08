@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
+import { calculateMedianRating } from "@/utils/ratingUtils";
 
 // Define TypeScript types for our database tables
 type TmdbRow = Database['public']['Tables']['tmdb']['Row'];
@@ -65,7 +66,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 0,
+        rating: 5.0, // Default rating
         genres: [],
       })),
       hasMore 
@@ -87,7 +88,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 0,
+        rating: 5.0, // Default rating
         genres: [],
       })),
       hasMore 
@@ -110,7 +111,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 0,
+        rating: 5.0, // Default rating
         genres: [],
       };
     }
@@ -119,9 +120,9 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     const ratings = tmdb.ratings as RatingsJson[] | null;
     const genres = tmdb.genres as GenreJson[] | null;
     
-    const rating = ratings && ratings.length > 0 ? 
-      ratings.find(r => r.source === 'The Movie Database')?.rating || 
-      ratings[0].rating || 0 : 0;
+    // Extract all available ratings and calculate median
+    const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
+    const medianRating = calculateMedianRating(allRatingValues);
     
     return {
       id: movie.id,
@@ -131,7 +132,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
         ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
         : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
       releaseYear: tmdb.release_date ? new Date(tmdb.release_date).getFullYear().toString() : "",
-      rating: rating,
+      rating: medianRating,
       genres: genres ? genres.map((genre) => genre.name || '') : [],
     };
   });
@@ -188,7 +189,7 @@ export async function fetchMovieById(id: string) {
       title: movieData.title,
       posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
       releaseYear: "",
-      rating: 0,
+      rating: 5.0,
       genres: [],
       overview: "No overview available",
       backdrop: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
@@ -210,7 +211,7 @@ export async function fetchMovieById(id: string) {
       title: movieData.title,
       posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
       releaseYear: "",
-      rating: 0,
+      rating: 5.0,
       genres: [],
       overview: "No overview available",
       backdrop: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
@@ -229,6 +230,10 @@ export async function fetchMovieById(id: string) {
     votes: rating.votes
   })).filter(rating => rating.rating > 0) : [];
 
+  // Calculate median rating from all ratings
+  const allRatingValues = allRatings.map(r => r.rating);
+  const medianRating = calculateMedianRating(allRatingValues);
+
   // Extract streaming providers if available
   const streamingProviders = streaming?.providers || [];
 
@@ -242,9 +247,7 @@ export async function fetchMovieById(id: string) {
     posterPath: image?.poster_path ? `https://image.tmdb.org/t/p/w500${image.poster_path}` : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
     releaseYear: tmdbData.release_date ? new Date(tmdbData.release_date).getFullYear().toString() : "",
     releaseDate: tmdbData.release_date,
-    rating: ratings && ratings.length > 0 ? 
-      ratings.find(r => r.source === 'The Movie Database')?.rating || 
-      ratings[0].rating || 0 : 0,
+    rating: medianRating,
     allRatings: allRatings,
     genres: genres ? genres.map((genre) => genre.name || '') : [],
     director: "Director information not available",
@@ -282,10 +285,9 @@ function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
     const ratings = movie.ratings as RatingsJson[] | null; 
     const genres = movie.genres as GenreJson[] | null;
     
-    // Find the TMDB rating or use the first available rating
-    const rating = ratings && ratings.length > 0 ? 
-      ratings.find(r => r.source === 'The Movie Database')?.rating || 
-      ratings[0].rating || 0 : 0;
+    // Extract all available ratings and calculate median
+    const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
+    const medianRating = calculateMedianRating(allRatingValues);
     
     return {
       id: movie.id,
@@ -295,7 +297,7 @@ function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
         ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
         : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
       releaseYear: movie.release_date ? new Date(movie.release_date).getFullYear().toString() : "",
-      rating: rating,
+      rating: medianRating,
       genres: genres ? genres.map((genre) => genre.name || '') : [],
     };
   });

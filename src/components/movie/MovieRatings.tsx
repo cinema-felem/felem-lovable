@@ -14,11 +14,16 @@ interface MovieRatingsProps {
 const MovieRatings = ({ allRatings }: MovieRatingsProps) => {
   if (!allRatings || allRatings.length === 0) return null;
   
+  // Calculate median for the display title
+  const medianRating = allRatings.length > 0 
+    ? allRatings.reduce((sum, rating) => sum + rating.rating, 0) / allRatings.length 
+    : 5.0;
+  
   return (
     <div className="mb-6 animate-slide-up">
       <h3 className="text-white font-semibold mb-2 flex items-center">
         <Award className="w-4 h-4 mr-2 text-cinema-gold" />
-        Ratings
+        Ratings (Combined: {medianRating.toFixed(1)})
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
         {allRatings.map((ratingItem: RatingSource, index: number) => (
