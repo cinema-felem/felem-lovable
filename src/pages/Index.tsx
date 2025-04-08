@@ -15,30 +15,21 @@ const Index = () => {
   const [featuredMovie, setFeaturedMovie] = useState<any>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState<string>("rating");
   const { toast } = useToast();
 
-  const loadMovies = useCallback(async (reset = false) => {
+  // Load all movies at once
+  const loadAllMovies = useCallback(async () => {
     try {
-      if (reset) {
-        setLoading(true);
-        setPage(0);
-      } else {
-        setLoadingMore(true);
-      }
+      setLoading(true);
       
-      const { movies: newMovies, hasMore: moreAvailable } = await fetchPopularMovies(
-        reset ? 0 : page, 
-        10, 
+      const { movies: allMovies } = await fetchPopularMovies(
+        0, 
+        100, // Fetch a large batch of movies at once
         sortOption
       );
       
-      setMovies(prev => reset ? newMovies : [...prev, ...newMovies]);
-      setHasMore(moreAvailable);
-      setPage(prev => reset ? 1 : prev + 1);
+      setMovies(allMovies);
     } catch (error) {
       console.error("Error loading movies:", error);
       toast({
@@ -48,37 +39,42 @@ const Index = () => {
       });
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
-  }, [page, sortOption, toast]);
+  }, [sortOption, toast]);
 
   const handleSortChange = (value: string) => {
     setSortOption(value);
-    // Reset and reload with new sort
-    loadMovies(true);
-  };
-
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      loadMovies();
+    
+    // For client-side sorting if value is 'rating'
+    if (value === 'rating' && movies.length > 0) {
+      // Sort movies by rating (highest first)
+      const sortedMovies = [...movies].sort((a, b) => b.rating - a.rating);
+      setMovies(sortedMovies);
+    } else {
+      // For 'recent' or other sorts, fetch from server
+      loadAllMovies();
     }
   };
 
-  // Reload the movies when sortOption changes
+  // Initial data load
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         setLoading(true);
         
-        const [featured, { movies: popularMovies, hasMore: moreAvailable }] = await Promise.all([
+        const [featured, { movies: allMovies }] = await Promise.all([
           fetchFeaturedMovie(),
-          fetchPopularMovies(0, 10, sortOption)
+          fetchPopularMovies(0, 100, sortOption)
         ]);
         
         setFeaturedMovie(featured);
-        setMovies(popularMovies);
-        setHasMore(moreAvailable);
-        setPage(1);
+        
+        // Client-side sort if needed
+        if (sortOption === 'rating') {
+          setMovies(allMovies.sort((a, b) => b.rating - a.rating));
+        } else {
+          setMovies(allMovies);
+        }
       } catch (error) {
         console.error("Error loading initial data:", error);
         toast({
@@ -92,7 +88,7 @@ const Index = () => {
     };
 
     loadInitialData();
-  }, [toast, sortOption]);
+  }, [toast]);
 
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
@@ -102,7 +98,7 @@ const Index = () => {
         {featuredMovie && <HeroSection featuredMovie={featuredMovie} />}
         
         <div className="py-8">
-          {loading && movies.length === 0 ? (
+          {loading ? (
             <div className="container mx-auto px-4 text-center py-12">
               <p className="text-white text-xl">Loading movies...</p>
             </div>
@@ -110,9 +106,6 @@ const Index = () => {
             <MovieGrid 
               title="Movies" 
               movies={movies}
-              onLoadMore={handleLoadMore}
-              hasMore={hasMore}
-              isLoading={loadingMore}
               sortOption={sortOption}
               onSortChange={handleSortChange}
             />

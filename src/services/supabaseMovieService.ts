@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
@@ -100,12 +99,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     .select('id, title, image, release_date, ratings, genres')
     .in('id', tmdbIds);
   
-  // Apply additional sorting if needed
-  if (sortBy === 'rating') {
-    // This will be post-processed after we fetch the data since we need to calculate median ratings
-    tmdbQuery = tmdbQuery.order('ratings->tmdb', { ascending: false });
-  }
-  
+  // We'll sort on the client side, so no need for server-side sorting
   const { data: tmdbData, error: tmdbError } = await tmdbQuery;
   
   if (tmdbError) {
@@ -166,11 +160,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     };
   });
   
-  // Additional client-side sorting if needed (for median ratings or complex sorts)
-  if (sortBy === 'rating') {
-    movies = movies.sort((a, b) => b.rating - a.rating);
-  }
-  
+  // We'll handle sorting in the client, so just return the movies as is
   return { movies, hasMore };
 }
 
