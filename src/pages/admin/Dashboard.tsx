@@ -18,16 +18,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-cinema-dark-blue text-white p-4">
+    <div className="min-h-screen bg-cinema-dark-blue">
+      <div className="bg-sidebar text-white p-4 border-b border-sidebar-border">
         <div className="container mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold">Felem Admin Portal</h1>
+            <h1 className="text-xl font-bold text-primary">Felem Admin Portal</h1>
             <p className="text-sm text-slate-300">
               Logged in as: {user?.email}
             </p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
             Sign Out
           </Button>
         </div>
@@ -35,16 +39,26 @@ export default function Dashboard() {
 
       <div className="container mx-auto py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="garbage-titles">Garbage Titles</TabsTrigger>
-            <TabsTrigger value="movies">Movies</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-card">
+            <TabsTrigger 
+              value="garbage-titles" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-cinema-dark-blue"
+            >
+              Garbage Titles
+            </TabsTrigger>
+            <TabsTrigger 
+              value="movies"
+              className="data-[state=active]:bg-primary data-[state=active]:text-cinema-dark-blue"
+            >
+              Movies
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="garbage-titles" className="p-4 bg-white rounded-md shadow">
+          <TabsContent value="garbage-titles" className="p-4 bg-card rounded-md shadow">
             <GarbageTitleManager />
           </TabsContent>
           
-          <TabsContent value="movies" className="p-4 bg-white rounded-md shadow">
+          <TabsContent value="movies" className="p-4 bg-card rounded-md shadow">
             <MovieManager />
           </TabsContent>
         </Tabs>

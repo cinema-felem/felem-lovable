@@ -54,10 +54,10 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-cinema-dark-blue">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-card border-border">
         <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-primary">Admin Login</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Sign in to access the admin portal
           </CardDescription>
         </CardHeader>
@@ -72,12 +72,13 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="bg-muted border-border"
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
               disabled={isLoading}
             >
               {isLoading ? "Sending..." : "Sign in with Magic Link"}
@@ -96,7 +97,7 @@ export default function Login() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full"
+              className="w-full border-border hover:bg-muted"
               onClick={handleGoogleSignIn}
             >
               Sign in with Google
