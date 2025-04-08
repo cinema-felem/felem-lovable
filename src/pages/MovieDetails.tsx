@@ -14,6 +14,7 @@ import MovieSidebar from "@/components/movie/MovieSidebar";
 import MovieInfo from "@/components/movie/MovieInfo";
 import MovieShowtimes from "@/components/movie/MovieShowtimes";
 import MovieVideos from "@/components/movie/MovieVideos";
+import { logMovieView, logShowtimeInteraction } from "@/utils/analytics";
 
 interface Showtime {
   id: number;
@@ -49,6 +50,9 @@ const MovieDetails = () => {
         setMovie(movieData);
         
         if (movieData) {
+          // Log movie view once data is loaded
+          logMovieView(movieId, movieData.title);
+          
           // Fetch available dates for the movie
           const datesData = await fetchAvailableDatesForMovie(movieId);
           setAvailableDates(datesData);
@@ -100,6 +104,14 @@ const MovieDetails = () => {
       );
       
       setShowtimes(showtimesData);
+      
+      // Log cinema selection for this movie
+      if (cinemaId && movie) {
+        const cinema = cinemas.find(c => c.value === cinemaId);
+        if (cinema) {
+          logShowtimeInteraction(movieId, movie.title, cinemaId, cinema.label);
+        }
+      }
     } catch (error) {
       console.error("Error updating showtimes:", error);
     }

@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import { Movie } from "./MovieCard.d";
+import { logEvent } from "@/utils/analytics";
 
 interface MovieCardProps {
   movie: Movie;
@@ -11,8 +12,17 @@ const MovieCard = ({ movie }: MovieCardProps) => {
   // Prioritize tmdbTitle if available, otherwise use title
   const displayTitle = movie.tmdbTitle || movie.title;
   
+  const handleMovieClick = () => {
+    // Track when users click on a movie card
+    logEvent('click_movie_card', {
+      movie_id: movie.id,
+      movie_title: displayTitle,
+      release_year: movie.releaseYear
+    });
+  };
+  
   return (
-    <Link to={`/movie/${movie.id}`} className="group">
+    <Link to={`/movie/${movie.id}`} className="group" onClick={handleMovieClick}>
       <div className="relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-105 poster-shadow h-full">
         <img
           src={movie.posterPath}

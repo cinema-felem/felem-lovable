@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { logEvent } from "@/utils/analytics";
 
 interface HeroSectionProps {
   featuredMovie: {
@@ -12,6 +13,14 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ featuredMovie }: HeroSectionProps) => {
+  const handleFeaturedClick = () => {
+    // Track when users click on the featured movie
+    logEvent('click_featured_movie', {
+      movie_id: featuredMovie.id,
+      movie_title: featuredMovie.title
+    });
+  };
+
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full">
       <div 
@@ -31,7 +40,10 @@ const HeroSection = ({ featuredMovie }: HeroSectionProps) => {
           </p>
           <div className="flex flex-wrap gap-4">
             <Button asChild className="bg-cinema-gold hover:bg-cinema-gold/90 text-black">
-              <Link to={`/movie/${featuredMovie.id}`}>
+              <Link 
+                to={`/movie/${featuredMovie.id}`}
+                onClick={handleFeaturedClick}
+              >
                 View Details
               </Link>
             </Button>
