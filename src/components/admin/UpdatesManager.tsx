@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -76,12 +75,10 @@ export function UpdatesManager() {
   async function fetchUpdates() {
     setLoading(true);
     try {
-      // Build the query with filters and sorting
       let query = supabase
         .from("Updates")
         .select("*", { count: "exact" });
       
-      // Apply filters if they exist
       if (filterModel) {
         query = query.ilike("modelName", `%${filterModel}%`);
       }
@@ -90,10 +87,8 @@ export function UpdatesManager() {
         query = query.eq("operation", filterOperation);
       }
       
-      // Apply sorting
       query = query.order(sortField, { ascending: sortDirection === "asc" });
       
-      // Apply pagination
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
       query = query.range(from, to);
@@ -140,7 +135,6 @@ export function UpdatesManager() {
     try {
       const now = new Date().toISOString();
       
-      // Create a complete record with all required fields
       const recordToInsert = {
         modelName: newUpdate.modelName,
         operation: newUpdate.operation,
@@ -214,17 +208,14 @@ export function UpdatesManager() {
 
   function handleSort(field: string) {
     if (sortField === field) {
-      // Toggle direction if same field
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      // New field, default to descending
       setSortField(field);
       setSortDirection("desc");
     }
   }
 
   function handleFilterChange() {
-    // Reset to first page when filters change
     setCurrentPage(1);
   }
 
@@ -234,7 +225,6 @@ export function UpdatesManager() {
     setCurrentPage(1);
   }
 
-  // Calculate total pages
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const operationOptions = ["CREATE", "UPDATE", "DELETE", "TRANSFORM"];
 
@@ -340,7 +330,6 @@ export function UpdatesManager() {
         </Dialog>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-end gap-4">
@@ -367,7 +356,7 @@ export function UpdatesManager() {
                   <SelectValue placeholder="All operations" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All operations</SelectItem>
+                  <SelectItem value="all-operations">All operations</SelectItem>
                   {operationOptions.map(op => (
                     <SelectItem key={op} value={op}>{op}</SelectItem>
                   ))}
@@ -607,7 +596,6 @@ export function UpdatesManager() {
             </TableBody>
           </Table>
           
-          {/* Pagination */}
           {totalPages > 1 && (
             <Pagination className="mt-4">
               <PaginationContent>
@@ -623,7 +611,6 @@ export function UpdatesManager() {
                 </PaginationItem>
                 
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  // Show a window of 5 pages centered around the current page
                   let pageNum;
                   if (totalPages <= 5) {
                     pageNum = i + 1;
