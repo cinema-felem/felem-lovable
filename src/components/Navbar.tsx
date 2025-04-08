@@ -12,6 +12,7 @@ const Navbar = () => {
         <div className="flex items-center space-x-6">
           <Link to="/" className="text-white hover:text-cinema-gold transition">Home</Link>
           <Link to="/cinemas" className="text-white hover:text-cinema-gold transition">Cinemas</Link>
+          <Link to="/" className="text-white hover:text-cinema-gold transition">Showtimes</Link>
         </div>
       </div>
     </nav>

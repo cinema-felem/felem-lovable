@@ -44,7 +44,12 @@ const HeroSection = ({ featuredMovie }: HeroSectionProps) => {
                 to={`/movie/${featuredMovie.id}`}
                 onClick={handleFeaturedClick}
               >
-                View Details
+                View Showtimes
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="text-white border-white/20 hover:bg-white/10">
+              <Link to="/cinemas">
+                Find Cinemas
               </Link>
             </Button>
           </div>

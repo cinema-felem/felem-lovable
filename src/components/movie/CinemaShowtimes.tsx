@@ -1,5 +1,5 @@
 
-import { Map } from "lucide-react";
+import { Map, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
@@ -34,10 +34,11 @@ const CinemaShowtimes = ({ cinemaName, showtimes }: CinemaShowtimesProps) => {
               href={showtime.link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-cinema-dark-gray/50 rounded p-3 hover:bg-cinema-dark-gray transition-colors"
+              className="bg-cinema-dark-gray/50 rounded p-3 hover:bg-cinema-dark-gray transition-colors group"
             >
               <div className="flex flex-col">
-                <span className="text-cinema-gold font-medium">
+                <span className="text-cinema-gold font-medium flex items-center">
+                  <Ticket className="w-4 h-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                   {format(date, 'h:mm a')}
                 </span>
                 <span className="text-gray-400 text-sm">
@@ -48,6 +49,9 @@ const CinemaShowtimes = ({ cinemaName, showtimes }: CinemaShowtimesProps) => {
                     {showtime.movieFormat}
                   </Badge>
                 )}
+              </div>
+              <div className="mt-2 text-xs text-white/70 opacity-0 group-hover:opacity-100 transition-opacity">
+                Buy tickets
               </div>
             </a>
           );
