@@ -1,5 +1,6 @@
+
 import { useParams } from "react-router-dom";
-import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Bookmark, Heart, Map, Ticket, CalendarIcon, MapPin, X } from "lucide-react";
+import { Star, Clock, Calendar, Tag, Globe, Award, Film, Video, Map, Ticket, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { fetchMovieById } from "@/services/supabaseMovieService";
@@ -149,6 +150,9 @@ const MovieDetails = () => {
     );
   }
   
+  // Use TMDB title as the primary title with movie's title as fallback
+  const displayTitle = movie.title;
+  
   const showtimesByCinema = showtimes.reduce((acc, showtime) => {
     if (!acc[showtime.cinemaName]) {
       acc[showtime.cinemaName] = [];
@@ -178,7 +182,7 @@ const MovieDetails = () => {
             <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
               <img 
                 src={movie.posterPath} 
-                alt={`${movie.title} poster`}
+                alt={`${displayTitle} poster`}
                 className="w-full h-auto rounded-lg poster-shadow animate-fade-in"
               />
               
@@ -199,22 +203,16 @@ const MovieDetails = () => {
                   </div>
                 )}
                 
-                <div className="flex space-x-2">
-                  <Button className="flex-1 bg-cinema-gold hover:bg-cinema-gold/90 text-black">
-                    <Heart className="w-4 h-4 mr-2" /> Favorite
-                  </Button>
-                  <Button variant="outline" className="flex-1 text-white border-white hover:bg-white/10">
-                    <Bookmark className="w-4 h-4 mr-2" /> Watchlist
-                  </Button>
-                </div>
+                {/* Removed Favorite and Watchlist buttons */}
               </div>
             </div>
             
             <div className="flex-grow">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 text-shadow animate-slide-up">
-                {movie.title}
-                {movie.originalTitle && movie.originalTitle !== movie.title && (
-                  <span className="block text-lg text-gray-400 mt-1">{movie.originalTitle}</span>
+                {/* Use TMDB title with movie title as fallback */}
+                {movie.originalTitle || displayTitle}
+                {movie.originalTitle && movie.originalTitle !== displayTitle && (
+                  <span className="block text-lg text-gray-400 mt-1">{displayTitle}</span>
                 )}
               </h1>
               
@@ -369,8 +367,8 @@ const MovieDetails = () => {
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                       {cinemaTimes.map((showtime) => {
-                        const unixTime = parseInt(showtime.time);
-                        const date = new Date(unixTime * 1000);
+                        // Use unixTime directly as it's already in Unix timestamp format
+                        const date = new Date(showtime.unixTime * 1000);
                         
                         return (
                           <a 
