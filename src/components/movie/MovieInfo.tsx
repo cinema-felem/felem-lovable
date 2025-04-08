@@ -1,6 +1,9 @@
 
-import { Star, Clock, Calendar, Tag, Globe, Award, Film } from "lucide-react";
+import { Star, Clock, Calendar, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import MovieGenres from "./MovieGenres";
+import MovieRatings from "./MovieRatings";
+import MovieCast from "./MovieCast";
 
 interface RatingSource {
   source: string;
@@ -74,21 +77,7 @@ const MovieInfo = ({ movie }: MovieInfoProps) => {
         )}
       </div>
       
-      {movie.genres && movie.genres.length > 0 && (
-        <div className="mb-6 animate-slide-up">
-          <h3 className="text-white font-semibold mb-2 flex items-center">
-            <Tag className="w-4 h-4 mr-2 text-cinema-gold" />
-            Genres
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {movie.genres.map((genre: string) => (
-              <Badge key={genre} variant="outline" className="bg-cinema-dark-gray/50 text-white">
-                {genre}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      <MovieGenres genres={movie.genres} />
       
       {movie.overview && (
         <div className="mb-6 animate-slide-up">
@@ -97,53 +86,9 @@ const MovieInfo = ({ movie }: MovieInfoProps) => {
         </div>
       )}
       
-      {movie.allRatings && movie.allRatings.length > 0 && (
-        <div className="mb-6 animate-slide-up">
-          <h3 className="text-white font-semibold mb-2 flex items-center">
-            <Award className="w-4 h-4 mr-2 text-cinema-gold" />
-            Ratings
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-            {movie.allRatings.map((ratingItem: RatingSource, index: number) => (
-              <div key={index} className="bg-cinema-dark-gray/30 p-3 rounded flex items-center justify-between">
-                <span className="text-gray-300">{ratingItem.source}</span>
-                <div className="flex items-center">
-                  <span className="text-white font-medium mr-1">
-                    {ratingItem.rating.toFixed(1)}
-                  </span>
-                  <Star className="w-4 h-4 text-cinema-gold fill-cinema-gold" />
-                  {ratingItem.votes && (
-                    <span className="ml-1 text-xs text-gray-400">({ratingItem.votes})</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <MovieRatings allRatings={movie.allRatings} />
       
-      {movie.cast && movie.cast.length > 0 && movie.cast[0] !== "Cast information not available" && (
-        <div className="mb-6 animate-slide-up">
-          <h3 className="text-white font-semibold mb-2 flex items-center">
-            <Film className="w-4 h-4 mr-2 text-cinema-gold" />
-            Cast
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {movie.cast.map((actor: string) => (
-              <Badge key={actor} variant="outline" className="bg-cinema-dark-gray/50 text-white">
-                {actor}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {movie.director && movie.director !== "Director information not available" && (
-        <div className="mb-6 animate-slide-up">
-          <h3 className="text-white font-semibold mb-2">Director</h3>
-          <p className="text-gray-300">{movie.director}</p>
-        </div>
-      )}
+      <MovieCast cast={movie.cast} director={movie.director} />
     </div>
   );
 };
