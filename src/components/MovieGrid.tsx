@@ -70,12 +70,16 @@ const MovieGrid = ({
           {movies.map((movie, index) => {
             if (movies.length === index + 1) {
               return (
-                <div ref={lastMovieElementRef} key={movie.id}>
+                <div ref={lastMovieElementRef} key={movie.id} className="aspect-[2/3]">
                   <MovieCard movie={movie} />
                 </div>
               );
             } else {
-              return <MovieCard key={movie.id} movie={movie} />;
+              return (
+                <div key={movie.id} className="aspect-[2/3]">
+                  <MovieCard movie={movie} />
+                </div>
+              );
             }
           })}
         </div>

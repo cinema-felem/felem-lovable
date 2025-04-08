@@ -13,11 +13,11 @@ const MovieCard = ({ movie }: MovieCardProps) => {
   
   return (
     <Link to={`/movie/${movie.id}`} className="group">
-      <div className="relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-105 poster-shadow">
+      <div className="relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-105 poster-shadow h-full">
         <img
           src={movie.posterPath}
           alt={`${displayTitle} poster`}
-          className="h-[300px] w-full object-cover object-center"
+          className="w-full h-full object-cover object-center"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300">
