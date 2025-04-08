@@ -1,14 +1,11 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
 import { calculateMedianRating } from "@/utils/ratingUtils";
 
-// Define TypeScript types for our database tables
 type TmdbRow = Database['public']['Tables']['tmdb']['Row'];
 type Json = Database['public']['Tables']['tmdb']['Row']['image'];
 
-// Define more specific types for our JSON objects
 interface ImageJson {
   poster_path?: string;
   backdrop_path?: string;
@@ -31,16 +28,13 @@ interface StreamingJson {
 }
 
 export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'): Promise<{movies: Movie[], hasMore: boolean}> {
-  // First get movie IDs from the Movie table
   const from = page * limit;
   const to = from + limit - 1;
   
-  // Fetch movies from either the Movie table or the tmdb table depending on the sort criteria
   let movieData;
   let movieError;
   
   if (sortBy === 'recent') {
-    // For 'recent', use release_date from tmdb table
     const { data, error } = await supabase
       .from('tmdb')
       .select('id, title, image, release_date, ratings, genres')
@@ -54,7 +48,6 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     }));
     movieError = error;
   } else if (sortBy === 'hipster') {
-    // For 'hipster', filter by movies that have a letterboxd rating and sort by it
     const { data, error } = await supabase
       .from('tmdb')
       .select('id, title, image, release_date, ratings, genres')
@@ -68,7 +61,6 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     }));
     movieError = error;
   } else {
-    // For 'rating' or any other sort, get IDs from the Movie table
     const { data, error } = await supabase
       .from('Movie')
       .select('id, title, tmdbId')
@@ -83,63 +75,54 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     return { movies: [], hasMore: false };
   }
 
-  // Check if we got an extra item (indicating there are more)
   const hasMore = movieData && movieData.length > limit;
-  // Remove the extra item if it exists
   const paginatedData = hasMore ? movieData.slice(0, limit) : movieData;
   
-  // Extract tmdbIds for fetching additional metadata
   const tmdbIds = paginatedData
     .filter(movie => movie.tmdbId !== null)
     .map(movie => movie.tmdbId as number);
   
   if (tmdbIds.length === 0) {
-    // Return basic movie data if no tmdbIds are available
     return { 
       movies: paginatedData.map(movie => ({
         id: movie.id,
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 5.0, // Default rating
+        rating: 5.0,
         genres: [],
       })),
       hasMore 
     };
   }
   
-  // Fetch metadata from tmdb table
   let tmdbQuery = supabase
     .from('tmdb')
     .select('id, title, image, release_date, ratings, genres')
     .in('id', tmdbIds);
   
-  // We'll sort on the client side, so no need for server-side sorting
   const { data: tmdbData, error: tmdbError } = await tmdbQuery;
   
   if (tmdbError) {
     console.error('Error fetching tmdb metadata:', tmdbError);
-    // Return basic movie data if tmdb fetch fails
     return { 
       movies: paginatedData.map(movie => ({
         id: movie.id,
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 5.0, // Default rating
+        rating: 5.0,
         genres: [],
       })),
       hasMore 
     };
   }
   
-  // Create a mapping of tmdbId to tmdb metadata
   const tmdbMap = new Map();
   tmdbData?.forEach(tmdb => {
     tmdbMap.set(tmdb.id, tmdb);
   });
   
-  // Combine Movie and tmdb data
   let movies = paginatedData.map(movie => {
     const tmdb = movie.tmdbId ? tmdbMap.get(movie.tmdbId) : null;
     
@@ -149,7 +132,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
         title: movie.title,
         posterPath: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
         releaseYear: "",
-        rating: 5.0, // Default rating
+        rating: 5.0,
         genres: [],
       };
     }
@@ -158,11 +141,9 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     const ratings = tmdb.ratings as RatingsJson[] | null;
     const genres = tmdb.genres as GenreJson[] | null;
     
-    // Extract all available ratings and calculate median
     const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
     const medianRating = calculateMedianRating(allRatingValues);
     
-    // Extract letterboxd rating if available
     const letterboxdRating = ratings ? 
       ratings.find(r => r.source === 'letterboxd')?.rating : 
       undefined;
@@ -186,14 +167,11 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     };
   });
   
-  // If sorting by hipster (letterboxd) rating
   if (sortBy === 'hipster') {
-    // Filter movies that have a letterboxd rating
     movies = movies.filter(movie => 
       movie.allRatings && movie.allRatings.some(r => r.source === 'letterboxd')
     );
     
-    // Sort by letterboxd rating
     movies.sort((a, b) => {
       const aRating = a.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
       const bRating = b.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
@@ -232,7 +210,6 @@ export async function fetchTrendingMovies(): Promise<Movie[]> {
 }
 
 export async function fetchMovieById(id: string) {
-  // Fetch the movie from the Movie table
   const { data: movieData, error: movieError } = await supabase
     .from('Movie')
     .select('*, tmdbId')
@@ -246,7 +223,6 @@ export async function fetchMovieById(id: string) {
 
   if (!movieData) return null;
   
-  // If there's no tmdbId, return basic movie info
   if (!movieData.tmdbId) {
     return {
       id: movieData.id,
@@ -260,16 +236,14 @@ export async function fetchMovieById(id: string) {
     };
   }
   
-  // Fetch additional metadata from tmdb table
   const { data: tmdbData, error: tmdbError } = await supabase
     .from('tmdb')
-    .select('*, external_ids, streaming')
+    .select('*, external_ids, streaming, videos')
     .eq('id', movieData.tmdbId)
     .single();
   
   if (tmdbError || !tmdbData) {
     console.error('Error fetching tmdb data:', tmdbError);
-    // Return basic movie info if tmdb fetch fails
     return {
       id: movieData.id,
       title: movieData.title,
@@ -286,20 +260,20 @@ export async function fetchMovieById(id: string) {
   const ratings = tmdbData.ratings as RatingsJson[] | null;
   const genres = tmdbData.genres as GenreJson[] | null;
   const streaming = tmdbData.streaming as StreamingJson | null;
+  const videos = tmdbData.videos as any[] | null;
 
-  // Extract all available ratings
   const allRatings = ratings ? ratings.map(rating => ({
     source: rating.source || 'Unknown',
     rating: rating.rating || 0,
     votes: rating.votes
   })).filter(rating => rating.rating > 0) : [];
 
-  // Calculate median rating from all ratings
   const allRatingValues = allRatings.map(r => r.rating);
   const medianRating = calculateMedianRating(allRatingValues);
 
-  // Extract streaming providers if available
   const streamingProviders = streaming?.providers || [];
+
+  const movieVideos = videos || [];
 
   return {
     id: movieData.id,
@@ -324,6 +298,7 @@ export async function fetchMovieById(id: string) {
     originCountry: tmdbData.origin_country,
     language: movieData.language,
     format: movieData.format,
+    videos: movieVideos,
   };
 }
 
@@ -342,14 +317,12 @@ export async function searchMovies(query: string): Promise<Movie[]> {
   return transformTmdbToMovies(data || []);
 }
 
-// Helper function to transform tmdb data to Movie format
 function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
   return tmdbMovies.map(movie => {
     const image = movie.image as ImageJson | null;
     const ratings = movie.ratings as RatingsJson[] | null; 
     const genres = movie.genres as GenreJson[] | null;
     
-    // Extract all available ratings and calculate median
     const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
     const medianRating = calculateMedianRating(allRatingValues);
     
@@ -367,7 +340,6 @@ function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
   });
 }
 
-// Featured movie for hero section
 export async function fetchFeaturedMovie() {
   const { data, error } = await supabase
     .from('tmdb')

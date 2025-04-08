@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +14,7 @@ import { CinemaOption } from "@/services/types";
 import MovieSidebar from "@/components/movie/MovieSidebar";
 import MovieInfo from "@/components/movie/MovieInfo";
 import MovieShowtimes from "@/components/movie/MovieShowtimes";
+import MovieVideos from "@/components/movie/MovieVideos";
 
 interface Showtime {
   id: number;
@@ -147,6 +149,9 @@ const MovieDetails = () => {
             <MovieSidebar movie={movie} />
             <MovieInfo movie={movie} />
           </div>
+          
+          {/* Add the MovieVideos component */}
+          <MovieVideos videos={movie.videos} />
           
           {showtimes.length > 0 && (
             <MovieShowtimes 

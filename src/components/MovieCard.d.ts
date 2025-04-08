@@ -13,4 +13,10 @@ export interface Movie {
     votes?: number;
   }[];
   letterboxdRating?: number;
+  videos?: {
+    type: string;
+    key: string;
+    site: string;
+    name: string;
+  }[];
 }
