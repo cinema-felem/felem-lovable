@@ -39,6 +39,7 @@ const MovieGrid = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rating">Highest Rating</SelectItem>
+                  <SelectItem value="hipster">Hipster Rating</SelectItem>
                 </SelectContent>
               </Select>
             </div>

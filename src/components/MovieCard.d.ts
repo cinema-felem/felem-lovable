@@ -7,4 +7,10 @@ export interface Movie {
   releaseYear: string;
   rating: number;
   genres?: string[];
+  allRatings?: {
+    source: string;
+    rating: number;
+    votes?: number;
+  }[];
+  letterboxdRating?: number;
 }

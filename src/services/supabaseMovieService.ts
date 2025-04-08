@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
@@ -44,6 +45,20 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       .from('tmdb')
       .select('id, title, image, release_date, ratings, genres')
       .order('release_date', { ascending: false })
+      .range(from, to + 1);
+    
+    movieData = data?.map(item => ({
+      id: item.id.toString(),
+      title: item.title,
+      tmdbId: item.id
+    }));
+    movieError = error;
+  } else if (sortBy === 'hipster') {
+    // For 'hipster', filter by movies that have a letterboxd rating and sort by it
+    const { data, error } = await supabase
+      .from('tmdb')
+      .select('id, title, image, release_date, ratings, genres')
+      .contains('ratings', [{"source": "letterboxd"}])
       .range(from, to + 1);
     
     movieData = data?.map(item => ({
@@ -147,6 +162,11 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
     const medianRating = calculateMedianRating(allRatingValues);
     
+    // Extract letterboxd rating if available
+    const letterboxdRating = ratings ? 
+      ratings.find(r => r.source === 'letterboxd')?.rating : 
+      undefined;
+    
     return {
       id: movie.id,
       title: movie.title,
@@ -157,10 +177,30 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       releaseYear: tmdb.release_date ? new Date(tmdb.release_date).getFullYear().toString() : "",
       rating: medianRating,
       genres: genres ? genres.map((genre) => genre.name || '') : [],
+      allRatings: ratings ? ratings.map(r => ({
+        source: r.source || 'Unknown',
+        rating: r.rating || 0,
+        votes: r.votes
+      })) : [],
+      letterboxdRating: letterboxdRating,
     };
   });
   
-  // We'll handle sorting in the client, so just return the movies as is
+  // If sorting by hipster (letterboxd) rating
+  if (sortBy === 'hipster') {
+    // Filter movies that have a letterboxd rating
+    movies = movies.filter(movie => 
+      movie.allRatings && movie.allRatings.some(r => r.source === 'letterboxd')
+    );
+    
+    // Sort by letterboxd rating
+    movies.sort((a, b) => {
+      const aRating = a.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
+      const bRating = b.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
+      return bRating - aRating;
+    });
+  }
+  
   return { movies, hasMore };
 }
 

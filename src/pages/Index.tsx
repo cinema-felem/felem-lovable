@@ -53,6 +53,32 @@ const Index = () => {
       const sortedMovies = [...movies].sort((a, b) => b.rating - a.rating);
       setMovies(sortedMovies);
     }
+    // For client-side sorting and filtering if value is 'hipster'
+    else if (value === 'hipster' && movies.length > 0) {
+      // Filter movies that have a letterboxd rating and sort by it
+      const filteredMovies = [...movies].filter(movie => {
+        if (movie.allRatings) {
+          return movie.allRatings.some(rating => rating.source === 'letterboxd');
+        }
+        return false;
+      });
+      
+      if (filteredMovies.length > 0) {
+        // Sort by letterboxd rating (highest first)
+        const sortedMovies = filteredMovies.sort((a, b) => {
+          const aRating = a.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+          const bRating = b.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+          return bRating - aRating;
+        });
+        setMovies(sortedMovies);
+      } else {
+        toast({
+          title: "No Movies Found",
+          description: "No movies with Letterboxd ratings were found.",
+          variant: "default"
+        });
+      }
+    }
   };
 
   // Initial data load
@@ -80,6 +106,24 @@ const Index = () => {
         // Client-side sort if needed
         if (sortOption === 'rating') {
           setMovies(allMovies.sort((a, b) => b.rating - a.rating));
+        } else if (sortOption === 'hipster') {
+          // Filter and sort by letterboxd rating
+          const filteredMovies = allMovies.filter(movie => {
+            if (movie.allRatings) {
+              return movie.allRatings.some(rating => rating.source === 'letterboxd');
+            }
+            return false;
+          });
+          
+          if (filteredMovies.length > 0) {
+            setMovies(filteredMovies.sort((a, b) => {
+              const aRating = a.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+              const bRating = b.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+              return bRating - aRating;
+            }));
+          } else {
+            setMovies(allMovies.sort((a, b) => b.rating - a.rating));
+          }
         } else {
           setMovies(allMovies);
         }
@@ -96,7 +140,7 @@ const Index = () => {
     };
 
     loadInitialData();
-  }, [toast]);
+  }, [sortOption, toast]);
 
   // Update featured movie on page navigation
   useEffect(() => {
