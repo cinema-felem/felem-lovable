@@ -74,13 +74,22 @@ export function UpdatesManager() {
     
     try {
       const now = new Date().toISOString();
+      
+      // Fix: Create a complete record with all required fields
+      const recordToInsert = {
+        modelName: newUpdate.modelName,
+        operation: newUpdate.operation,
+        sourceField: newUpdate.sourceField,
+        sourceText: newUpdate.sourceText,
+        destinationField: newUpdate.destinationField || null,
+        destinationText: newUpdate.destinationText || null,
+        createdAt: now,
+        updatedAt: now
+      };
+      
       const { error } = await supabase
         .from("Updates")
-        .insert([{ 
-          ...newUpdate,
-          createdAt: now,
-          updatedAt: now
-        }]);
+        .insert(recordToInsert);
       
       if (error) throw error;
       toast.success("Update created successfully");
