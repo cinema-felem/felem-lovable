@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -107,9 +108,9 @@ const MovieDetails = () => {
       
       // Log cinema selection for this movie
       if (cinemaId && movie) {
-        const cinema = cinemas.find(c => c.value === cinemaId);
+        const cinema = cinemas.find(c => c.id === cinemaId);
         if (cinema) {
-          logShowtimeInteraction(movieId, movie.title, cinemaId, cinema.label);
+          logShowtimeInteraction(movieId, movie.title, cinemaId, cinema.name);
         }
       }
     } catch (error) {
@@ -182,3 +183,4 @@ const MovieDetails = () => {
 };
 
 export default MovieDetails;
+
