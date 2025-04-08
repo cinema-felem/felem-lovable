@@ -13,10 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [featuredMovie, setFeaturedMovie] = useState<any>(null);
+  const [featuredMovies, setFeaturedMovies] = useState<any[]>([]);
+  const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState<string>("rating");
   const { toast } = useToast();
+  const [watchlist, setWatchlist] = useState<Set<number | string>>(new Set());
 
   // Load all movies at once
   const loadAllMovies = useCallback(async () => {
@@ -50,10 +53,27 @@ const Index = () => {
       // Sort movies by rating (highest first)
       const sortedMovies = [...movies].sort((a, b) => b.rating - a.rating);
       setMovies(sortedMovies);
-    } else {
-      // For 'recent' or other sorts, fetch from server
-      loadAllMovies();
     }
+  };
+
+  const toggleWatchlist = (movieId: number | string) => {
+    setWatchlist(prev => {
+      const newWatchlist = new Set(prev);
+      if (newWatchlist.has(movieId)) {
+        newWatchlist.delete(movieId);
+        toast({
+          title: "Removed from Watchlist",
+          description: "Movie has been removed from your watchlist",
+        });
+      } else {
+        newWatchlist.add(movieId);
+        toast({
+          title: "Added to Watchlist",
+          description: "Movie has been added to your watchlist",
+        });
+      }
+      return newWatchlist;
+    });
   };
 
   // Initial data load
@@ -62,12 +82,21 @@ const Index = () => {
       try {
         setLoading(true);
         
-        const [featured, { movies: allMovies }] = await Promise.all([
-          fetchFeaturedMovie(),
-          fetchPopularMovies(0, 100, sortOption)
-        ]);
+        // Load multiple featured movies for carousel
+        const featuredMoviesData = [];
+        for (let i = 0; i < 5; i++) {
+          const featured = await fetchFeaturedMovie();
+          if (featured) featuredMoviesData.push(featured);
+        }
         
-        setFeaturedMovie(featured);
+        setFeaturedMovies(featuredMoviesData);
+        
+        // Set initial featured movie
+        if (featuredMoviesData.length > 0) {
+          setFeaturedMovie(featuredMoviesData[0]);
+        }
+        
+        const { movies: allMovies } = await fetchPopularMovies(0, 100, sortOption);
         
         // Client-side sort if needed
         if (sortOption === 'rating') {
@@ -90,12 +119,28 @@ const Index = () => {
     loadInitialData();
   }, [toast]);
 
+  // Update featured movie on page navigation
+  useEffect(() => {
+    // Only run if we have more than one featured movie
+    if (featuredMovies.length > 1) {
+      const nextIndex = (currentFeaturedIndex + 1) % featuredMovies.length;
+      setCurrentFeaturedIndex(nextIndex);
+      setFeaturedMovie(featuredMovies[nextIndex]);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
       <Navbar />
       
       <main className="flex-grow">
-        {featuredMovie && <HeroSection featuredMovie={featuredMovie} />}
+        {featuredMovie && (
+          <HeroSection 
+            featuredMovie={featuredMovie} 
+            onAddToWatchlist={() => toggleWatchlist(featuredMovie.id)} 
+            isInWatchlist={watchlist.has(featuredMovie.id)}
+          />
+        )}
         
         <div className="py-8">
           {loading ? (

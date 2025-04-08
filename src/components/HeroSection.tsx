@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Bookmark, BookmarkPlus, BookmarkX } from "lucide-react";
 
 interface HeroSectionProps {
   featuredMovie: {
@@ -9,9 +10,11 @@ interface HeroSectionProps {
     backdrop: string;
     description: string;
   };
+  onAddToWatchlist: () => void;
+  isInWatchlist: boolean;
 }
 
-const HeroSection = ({ featuredMovie }: HeroSectionProps) => {
+const HeroSection = ({ featuredMovie, onAddToWatchlist, isInWatchlist }: HeroSectionProps) => {
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full">
       <div 
@@ -35,8 +38,22 @@ const HeroSection = ({ featuredMovie }: HeroSectionProps) => {
                 View Details
               </Link>
             </Button>
-            <Button variant="outline" className="text-white border-white hover:bg-white/10">
-              Add to Watchlist
+            <Button 
+              variant="outline" 
+              className="text-white border-white hover:bg-white/10"
+              onClick={onAddToWatchlist}
+            >
+              {isInWatchlist ? (
+                <>
+                  <BookmarkX className="mr-2 h-4 w-4" />
+                  Remove from Watchlist
+                </>
+              ) : (
+                <>
+                  <BookmarkPlus className="mr-2 h-4 w-4" />
+                  Add to Watchlist
+                </>
+              )}
             </Button>
           </div>
         </div>
