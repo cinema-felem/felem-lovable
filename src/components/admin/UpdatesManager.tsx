@@ -16,7 +16,23 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Trash, Plus } from "lucide-react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
+import { Loader2, Pencil, Trash, Plus, Filter, ArrowUpDown } from "lucide-react";
 
 interface Update {
   id: number;
@@ -33,6 +49,14 @@ interface Update {
 export function UpdatesManager() {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortField, setSortField] = useState<string>("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [filterModel, setFilterModel] = useState<string>("");
+  const [filterOperation, setFilterOperation] = useState<string>("");
+  
   const [newUpdate, setNewUpdate] = useState<Partial<Update>>({
     modelName: "",
     operation: "",
@@ -41,22 +65,44 @@ export function UpdatesManager() {
     destinationField: "",
     destinationText: ""
   });
+  
   const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
     fetchUpdates();
-  }, []);
+  }, [currentPage, itemsPerPage, sortField, sortDirection, filterModel, filterOperation]);
 
   async function fetchUpdates() {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Build the query with filters and sorting
+      let query = supabase
         .from("Updates")
-        .select("*")
-        .order("createdAt", { ascending: false });
+        .select("*", { count: "exact" });
+      
+      // Apply filters if they exist
+      if (filterModel) {
+        query = query.ilike("modelName", `%${filterModel}%`);
+      }
+      
+      if (filterOperation) {
+        query = query.eq("operation", filterOperation);
+      }
+      
+      // Apply sorting
+      query = query.order(sortField, { ascending: sortDirection === "asc" });
+      
+      // Apply pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+      
+      const { data, error, count } = await query;
       
       if (error) throw error;
       setUpdates(data || []);
+      setTotalCount(count || 0);
     } catch (error: any) {
       toast.error("Error fetching updates", {
         description: error.message,
@@ -66,16 +112,35 @@ export function UpdatesManager() {
     }
   }
 
-  async function createUpdate() {
-    if (!newUpdate.modelName || !newUpdate.operation || !newUpdate.sourceField || !newUpdate.sourceText) {
+  function resetForm() {
+    setNewUpdate({
+      modelName: "",
+      operation: "",
+      sourceField: "",
+      sourceText: "",
+      destinationField: "",
+      destinationText: ""
+    });
+    setEditingUpdate(null);
+    setIsSubmitting(false);
+  }
+
+  function validateForm(update: Partial<Update>): boolean {
+    if (!update.modelName || !update.operation || !update.sourceField || !update.sourceText) {
       toast.error("Please fill in all required fields");
-      return;
+      return false;
     }
+    return true;
+  }
+
+  async function createUpdate() {
+    if (!validateForm(newUpdate)) return;
     
+    setIsSubmitting(true);
     try {
       const now = new Date().toISOString();
       
-      // Fix: Create a complete record with all required fields
+      // Create a complete record with all required fields
       const recordToInsert = {
         modelName: newUpdate.modelName,
         operation: newUpdate.operation,
@@ -93,28 +158,21 @@ export function UpdatesManager() {
       
       if (error) throw error;
       toast.success("Update created successfully");
-      setNewUpdate({
-        modelName: "",
-        operation: "",
-        sourceField: "",
-        sourceText: "",
-        destinationField: "",
-        destinationText: ""
-      });
+      resetForm();
       fetchUpdates();
     } catch (error: any) {
       toast.error("Error creating update", {
         description: error.message,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   async function updateRecord() {
-    if (!editingUpdate || !editingUpdate.modelName || !editingUpdate.operation || !editingUpdate.sourceField || !editingUpdate.sourceText) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
+    if (!editingUpdate || !validateForm(editingUpdate)) return;
     
+    setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from("Updates")
@@ -126,12 +184,14 @@ export function UpdatesManager() {
       
       if (error) throw error;
       toast.success("Update record updated successfully");
-      setEditingUpdate(null);
+      resetForm();
       fetchUpdates();
     } catch (error: any) {
       toast.error("Error updating record", {
         description: error.message,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -152,6 +212,30 @@ export function UpdatesManager() {
     }
   }
 
+  function handleSort(field: string) {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // New field, default to descending
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  }
+
+  function handleFilterChange() {
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  }
+
+  function clearFilters() {
+    setFilterModel("");
+    setFilterOperation("");
+    setCurrentPage(1);
+  }
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
   const operationOptions = ["CREATE", "UPDATE", "DELETE", "TRANSFORM"];
 
   return (
@@ -173,7 +257,7 @@ export function UpdatesManager() {
             <div className="py-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Model Name</label>
+                  <label className="text-sm font-medium">Model Name <span className="text-red-500">*</span></label>
                   <Input
                     placeholder="Model Name"
                     value={newUpdate.modelName}
@@ -181,7 +265,7 @@ export function UpdatesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Operation</label>
+                  <label className="text-sm font-medium">Operation <span className="text-red-500">*</span></label>
                   <Select 
                     value={newUpdate.operation} 
                     onValueChange={(value) => setNewUpdate({...newUpdate, operation: value})}
@@ -199,7 +283,7 @@ export function UpdatesManager() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Source Field</label>
+                <label className="text-sm font-medium">Source Field <span className="text-red-500">*</span></label>
                 <Input
                   placeholder="Source Field"
                   value={newUpdate.sourceField}
@@ -208,7 +292,7 @@ export function UpdatesManager() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Source Text</label>
+                <label className="text-sm font-medium">Source Text <span className="text-red-500">*</span></label>
                 <Textarea
                   placeholder="Source Text"
                   value={newUpdate.sourceText}
@@ -218,7 +302,7 @@ export function UpdatesManager() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Destination Field (Optional)</label>
+                <label className="text-sm font-medium">Destination Field</label>
                 <Input
                   placeholder="Destination Field"
                   value={newUpdate.destinationField || ""}
@@ -227,7 +311,7 @@ export function UpdatesManager() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Destination Text (Optional)</label>
+                <label className="text-sm font-medium">Destination Text</label>
                 <Textarea
                   placeholder="Destination Text"
                   value={newUpdate.destinationText || ""}
@@ -240,167 +324,351 @@ export function UpdatesManager() {
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button onClick={createUpdate}>Save</Button>
+              <Button 
+                onClick={createUpdate} 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : "Save"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Model Name</label>
+              <Input
+                placeholder="Filter by model"
+                value={filterModel}
+                onChange={(e) => setFilterModel(e.target.value)}
+                onBlur={handleFilterChange}
+                className="w-40"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Operation</label>
+              <Select 
+                value={filterOperation} 
+                onValueChange={(value) => {
+                  setFilterOperation(value);
+                  handleFilterChange();
+                }}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All operations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All operations</SelectItem>
+                  {operationOptions.map(op => (
+                    <SelectItem key={op} value={op}>{op}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" onClick={clearFilters}>
+              Clear Filters
+            </Button>
+            <div className="ml-auto">
+              <Select 
+                value={String(itemsPerPage)} 
+                onValueChange={(value) => {
+                  setItemsPerPage(Number(value));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Items per page" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 per page</SelectItem>
+                  <SelectItem value="10">10 per page</SelectItem>
+                  <SelectItem value="20">20 per page</SelectItem>
+                  <SelectItem value="50">50 per page</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading updates...</span>
+        </div>
       ) : updates.length === 0 ? (
-        <p>No updates found. Create a new one to get started.</p>
+        <div className="bg-white rounded-md shadow p-8 text-center">
+          <p className="text-lg text-muted-foreground mb-4">No updates found matching your criteria.</p>
+          <p className="text-sm text-muted-foreground">Try clearing filters or create a new update to get started.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
-          {updates.map((update) => (
-            <Card key={update.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">{update.modelName}</span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        {update.operation}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Source Field: {update.sourceField}</p>
-                        <p className="text-sm mt-1 bg-gray-50 p-2 rounded max-h-20 overflow-y-auto">
-                          {update.sourceText}
-                        </p>
-                      </div>
-                      {update.destinationField && (
-                        <div>
-                          <p className="text-xs text-muted-foreground">Destination Field: {update.destinationField}</p>
-                          <p className="text-sm mt-1 bg-gray-50 p-2 rounded max-h-20 overflow-y-auto">
-                            {update.destinationText}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Created: {new Date(update.createdAt).toLocaleDateString()}
-                    </p>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead 
+                  className="cursor-pointer" 
+                  onClick={() => handleSort("modelName")}
+                >
+                  <div className="flex items-center">
+                    Model Name
+                    {sortField === "modelName" && (
+                      <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === "asc" ? "rotate-180" : ""}`} />
+                    )}
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => setEditingUpdate(update)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-xl">
-                        <DialogHeader>
-                          <DialogTitle>Edit Update Record</DialogTitle>
-                        </DialogHeader>
-                        {editingUpdate && (
-                          <div className="py-4 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer" 
+                  onClick={() => handleSort("operation")}
+                >
+                  <div className="flex items-center">
+                    Operation
+                    {sortField === "operation" && (
+                      <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === "asc" ? "rotate-180" : ""}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead>Source Field</TableHead>
+                <TableHead>Source Text</TableHead>
+                <TableHead>Destination</TableHead>
+                <TableHead 
+                  className="cursor-pointer" 
+                  onClick={() => handleSort("createdAt")}
+                >
+                  <div className="flex items-center">
+                    Created
+                    {sortField === "createdAt" && (
+                      <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === "asc" ? "rotate-180" : ""}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {updates.map((update) => (
+                <TableRow key={update.id}>
+                  <TableCell className="font-medium">{update.modelName}</TableCell>
+                  <TableCell>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {update.operation}
+                    </span>
+                  </TableCell>
+                  <TableCell>{update.sourceField}</TableCell>
+                  <TableCell className="max-w-xs truncate" title={update.sourceText}>
+                    {update.sourceText.length > 50 ? `${update.sourceText.substring(0, 50)}...` : update.sourceText}
+                  </TableCell>
+                  <TableCell>
+                    {update.destinationField && (
+                      <span className="text-xs text-muted-foreground">
+                        {update.destinationField}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(update.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => setEditingUpdate(update)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-xl">
+                          <DialogHeader>
+                            <DialogTitle>Edit Update Record</DialogTitle>
+                          </DialogHeader>
+                          {editingUpdate && (
+                            <div className="py-4 space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">Model Name <span className="text-red-500">*</span></label>
+                                  <Input
+                                    placeholder="Model Name"
+                                    value={editingUpdate.modelName}
+                                    onChange={(e) => setEditingUpdate({...editingUpdate, modelName: e.target.value})}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">Operation <span className="text-red-500">*</span></label>
+                                  <Select 
+                                    value={editingUpdate.operation} 
+                                    onValueChange={(value) => setEditingUpdate({...editingUpdate, operation: value})}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select operation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {operationOptions.map(op => (
+                                        <SelectItem key={op} value={op}>{op}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">Model Name</label>
+                                <label className="text-sm font-medium">Source Field <span className="text-red-500">*</span></label>
                                 <Input
-                                  placeholder="Model Name"
-                                  value={editingUpdate.modelName}
-                                  onChange={(e) => setEditingUpdate({...editingUpdate, modelName: e.target.value})}
+                                  placeholder="Source Field"
+                                  value={editingUpdate.sourceField}
+                                  onChange={(e) => setEditingUpdate({...editingUpdate, sourceField: e.target.value})}
                                 />
                               </div>
+                              
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">Operation</label>
-                                <Select 
-                                  value={editingUpdate.operation} 
-                                  onValueChange={(value) => setEditingUpdate({...editingUpdate, operation: value})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select operation" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {operationOptions.map(op => (
-                                      <SelectItem key={op} value={op}>{op}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                <label className="text-sm font-medium">Source Text <span className="text-red-500">*</span></label>
+                                <Textarea
+                                  placeholder="Source Text"
+                                  value={editingUpdate.sourceText}
+                                  onChange={(e) => setEditingUpdate({...editingUpdate, sourceText: e.target.value})}
+                                  rows={3}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Destination Field</label>
+                                <Input
+                                  placeholder="Destination Field"
+                                  value={editingUpdate.destinationField || ""}
+                                  onChange={(e) => setEditingUpdate({...editingUpdate, destinationField: e.target.value})}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Destination Text</label>
+                                <Textarea
+                                  placeholder="Destination Text"
+                                  value={editingUpdate.destinationText || ""}
+                                  onChange={(e) => setEditingUpdate({...editingUpdate, destinationText: e.target.value})}
+                                  rows={3}
+                                />
                               </div>
                             </div>
-                            
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Source Field</label>
-                              <Input
-                                placeholder="Source Field"
-                                value={editingUpdate.sourceField}
-                                onChange={(e) => setEditingUpdate({...editingUpdate, sourceField: e.target.value})}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Source Text</label>
-                              <Textarea
-                                placeholder="Source Text"
-                                value={editingUpdate.sourceText}
-                                onChange={(e) => setEditingUpdate({...editingUpdate, sourceText: e.target.value})}
-                                rows={3}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Destination Field (Optional)</label>
-                              <Input
-                                placeholder="Destination Field"
-                                value={editingUpdate.destinationField || ""}
-                                onChange={(e) => setEditingUpdate({...editingUpdate, destinationField: e.target.value})}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Destination Text (Optional)</label>
-                              <Textarea
-                                placeholder="Destination Text"
-                                value={editingUpdate.destinationText || ""}
-                                onChange={(e) => setEditingUpdate({...editingUpdate, destinationText: e.target.value})}
-                                rows={3}
-                              />
-                            </div>
-                          </div>
-                        )}
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </DialogClose>
-                          <Button onClick={updateRecord}>Save</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                    
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Trash className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Confirm Deletion</DialogTitle>
-                        </DialogHeader>
-                        <p>Are you sure you want to delete this update? This action cannot be undone.</p>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </DialogClose>
-                          <Button 
-                            variant="destructive" 
-                            onClick={() => deleteUpdate(update.id)}
-                          >
-                            Delete
+                          )}
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button 
+                              onClick={updateRecord}
+                              disabled={isSubmitting}
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Saving...
+                                </>
+                              ) : "Save"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Trash className="h-4 w-4 text-red-500" />
                           </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                          </DialogHeader>
+                          <p>Are you sure you want to delete this update? This action cannot be undone.</p>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button 
+                              variant="destructive" 
+                              onClick={() => deleteUpdate(update.id)}
+                            >
+                              Delete
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setCurrentPage(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  // Show a window of 5 pages centered around the current page
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink 
+                        href="#" 
+                        isActive={pageNum === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(pageNum);
+                        }}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+          
+          <div className="text-center text-sm text-muted-foreground">
+            Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} updates
+          </div>
+        </>
       )}
     </div>
   );
