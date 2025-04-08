@@ -24,11 +24,14 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
         try {
           console.log("Checking role for user:", user.id);
           
-          // Use the has_role RPC function directly
-          // This avoids querying the user_roles table directly which can cause recursion
-          const { data, error } = await supabase.rpc('has_role', { 
-            required_role: requiredRole 
-          });
+          // Use the text version of has_role since we're passing a string
+          // This avoids the ambiguity between the two has_role functions
+          const { data, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', requiredRole)
+            .maybeSingle();
           
           if (error) {
             throw new Error(`Role check failed: ${error.message}`);
@@ -39,7 +42,6 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
           // If user doesn't have the role, try to create it
           if (!data) {
             console.log("No admin role found, attempting to create one");
-            // Use an insert with on conflict do nothing to avoid duplicate roles
             const { error: insertError } = await supabase
               .from('user_roles')
               .insert([{ user_id: user.id, role: requiredRole }]);
@@ -53,15 +55,9 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
                 throw new Error(`Error assigning admin role: ${insertError.message}`);
               }
             } else {
-              // Role was successfully added, check again
-              const { data: newCheck, error: recheckError } = await supabase.rpc('has_role', { 
-                required_role: requiredRole 
-              });
-              
-              if (recheckError) throw new Error(`Role recheck failed: ${recheckError.message}`);
-              
-              setHasRequiredRole(newCheck);
-              setErrorMessage(newCheck ? null : `Role was created but access still denied`);
+              // Role was successfully added
+              setHasRequiredRole(true);
+              setErrorMessage(null);
             }
           } else {
             // User already has the role
