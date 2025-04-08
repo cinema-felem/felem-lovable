@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Cinema } from "./types";
+import { fetchShowtimesForCinema, fetchAvailableDatesForCinema } from "./showtimeService";
 
 /**
  * Fetch a single cinema by ID
@@ -46,3 +47,6 @@ export async function fetchAllCinemas(): Promise<Cinema[]> {
     return [];
   }
 }
+
+// Re-export showtime-related functions for backwards compatibility
+export { fetchShowtimesForCinema, fetchAvailableDatesForCinema };

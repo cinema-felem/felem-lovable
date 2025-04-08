@@ -10,6 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Clock, Calendar, Film, Ticket, ExternalLink } from "lucide-react";
 import { fetchCinemaById, fetchShowtimesForCinema, fetchAvailableDatesForCinema } from "@/services/cinemaService";
+import { CinemaShowtime } from "@/services/types";
+
+interface MovieShowtimeGroup {
+  movieId: string;
+  title: string;
+  tmdbTitle?: string;
+  posterPath: string;
+  showtimes: CinemaShowtime[];
+}
 
 const CinemaDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +56,7 @@ const CinemaDetails = () => {
     }
     acc[showtime.movieId].showtimes.push(showtime);
     return acc;
-  }, {} as Record<string, { movieId: string, title: string, tmdbTitle?: string, posterPath: string, showtimes: typeof showtimes }>);
+  }, {} as Record<string, MovieShowtimeGroup>);
 
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -103,9 +112,9 @@ const CinemaDetails = () => {
             </Link>
           </Button>
           
-          <h1 className="text-3xl font-bold text-white">{cinema.name}</h1>
+          <h1 className="text-3xl font-bold text-white">{cinema?.name}</h1>
           
-          {cinema.fullAddress && (
+          {cinema?.fullAddress && (
             <div className="flex items-start gap-2 mt-2 text-gray-300">
               <MapPin size={16} className="mt-1 flex-shrink-0 text-cinema-gold" />
               <p>{cinema.fullAddress}</p>

@@ -6,7 +6,7 @@ export interface TmdbMovie {
   title: string;
   image?: {
     poster_path?: string;
-  };
+  } | null;
 }
 
 /**
@@ -29,7 +29,11 @@ export async function fetchTmdbDataByIds(tmdbIds: number[]): Promise<Map<number,
     // Create a lookup map for easy access
     const tmdbLookup = new Map<number, TmdbMovie>();
     data?.forEach(item => {
-      tmdbLookup.set(item.id, item);
+      tmdbLookup.set(item.id, {
+        id: item.id,
+        title: item.title,
+        image: item.image as { poster_path?: string } | null
+      });
     });
     
     return tmdbLookup;

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Ticket, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShowtimeFilter from "@/components/ShowtimeFilter";
-import { CinemaOption } from "@/services/showtimeService";
+import { CinemaOption } from "@/services/types";
 import CinemaShowtimes from "./CinemaShowtimes";
 
 interface Showtime {

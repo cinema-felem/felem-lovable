@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CinemaOption } from "@/services/showtimeService";
+import { CinemaOption } from "@/services/types";
 import { cn } from "@/lib/utils";
 
 interface ShowtimeFilterProps {

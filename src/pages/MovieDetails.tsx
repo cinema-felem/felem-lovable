@@ -8,9 +8,9 @@ import { fetchMovieById } from "@/services/supabaseMovieService";
 import { 
   fetchShowtimesForMovie, 
   fetchCinemasWithShowtimesForMovie, 
-  fetchAvailableDatesForMovie, 
-  CinemaOption 
+  fetchAvailableDatesForMovie 
 } from "@/services/showtimeService";
+import { CinemaOption } from "@/services/types";
 import MovieSidebar from "@/components/movie/MovieSidebar";
 import MovieInfo from "@/components/movie/MovieInfo";
 import MovieShowtimes from "@/components/movie/MovieShowtimes";
