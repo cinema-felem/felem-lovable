@@ -1,5 +1,6 @@
 
 import { Award, Star } from "lucide-react";
+import { calculateMedianRating } from "@/utils/ratingUtils";
 
 interface RatingSource {
   source: string;
@@ -15,9 +16,8 @@ const MovieRatings = ({ allRatings }: MovieRatingsProps) => {
   if (!allRatings || allRatings.length === 0) return null;
   
   // Calculate median for the display title
-  const medianRating = allRatings.length > 0 
-    ? allRatings.reduce((sum, rating) => sum + rating.rating, 0) / allRatings.length 
-    : 5.0;
+  const ratingValues = allRatings.map(rating => rating.rating);
+  const medianRating = calculateMedianRating(ratingValues);
   
   return (
     <div className="mb-6 animate-slide-up">

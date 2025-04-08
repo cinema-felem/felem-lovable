@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { Database } from "@/integrations/supabase/types";
@@ -31,20 +32,40 @@ interface StreamingJson {
 
 export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'): Promise<{movies: Movie[], hasMore: boolean}> {
   // First get movie IDs from the Movie table
-  let query = supabase
-    .from('Movie')
-    .select('id, title, tmdbId');
-  
-  // Apply pagination
   const from = page * limit;
   const to = from + limit - 1;
   
-  // Fetch one extra item to determine if there are more items
-  const { data: movieData, error: movieError } = await query
-    .range(from, to + 1);
+  // Fetch movies from either the Movie table or the tmdb table depending on the sort criteria
+  let movieData;
+  let movieError;
+  
+  if (sortBy === 'recent') {
+    // For 'recent', use release_date from tmdb table
+    const { data, error } = await supabase
+      .from('tmdb')
+      .select('id, title, image, release_date, ratings, genres')
+      .order('release_date', { ascending: false })
+      .range(from, to + 1);
+    
+    movieData = data?.map(item => ({
+      id: item.id.toString(),
+      title: item.title,
+      tmdbId: item.id
+    }));
+    movieError = error;
+  } else {
+    // For 'rating' or any other sort, get IDs from the Movie table
+    const { data, error } = await supabase
+      .from('Movie')
+      .select('id, title, tmdbId')
+      .range(from, to + 1);
+    
+    movieData = data;
+    movieError = error;
+  }
 
   if (movieError || !movieData || movieData.length === 0) {
-    console.error('Error fetching popular movies:', movieError);
+    console.error('Error fetching movies:', movieError);
     return { movies: [], hasMore: false };
   }
 
@@ -74,10 +95,18 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
   }
   
   // Fetch metadata from tmdb table
-  const { data: tmdbData, error: tmdbError } = await supabase
+  let tmdbQuery = supabase
     .from('tmdb')
     .select('id, title, image, release_date, ratings, genres')
     .in('id', tmdbIds);
+  
+  // Apply additional sorting if needed
+  if (sortBy === 'rating') {
+    // This will be post-processed after we fetch the data since we need to calculate median ratings
+    tmdbQuery = tmdbQuery.order('ratings->tmdb', { ascending: false });
+  }
+  
+  const { data: tmdbData, error: tmdbError } = await tmdbQuery;
   
   if (tmdbError) {
     console.error('Error fetching tmdb metadata:', tmdbError);
@@ -102,7 +131,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
   });
   
   // Combine Movie and tmdb data
-  const movies = paginatedData.map(movie => {
+  let movies = paginatedData.map(movie => {
     const tmdb = movie.tmdbId ? tmdbMap.get(movie.tmdbId) : null;
     
     if (!tmdb) {
@@ -136,6 +165,11 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       genres: genres ? genres.map((genre) => genre.name || '') : [],
     };
   });
+  
+  // Additional client-side sorting if needed (for median ratings or complex sorts)
+  if (sortBy === 'rating') {
+    movies = movies.sort((a, b) => b.rating - a.rating);
+  }
   
   return { movies, hasMore };
 }

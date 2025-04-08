@@ -64,6 +64,7 @@ const Index = () => {
     }
   };
 
+  // Reload the movies when sortOption changes
   useEffect(() => {
     const loadInitialData = async () => {
       try {
