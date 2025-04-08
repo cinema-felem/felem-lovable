@@ -1,5 +1,11 @@
 
-import { Film, Video } from "lucide-react";
+import { Film, Play } from "lucide-react";
+import { useState } from "react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogTrigger 
+} from "@/components/ui/dialog";
 
 interface VideoItem {
   type: string;
@@ -47,22 +53,56 @@ const MovieVideos = ({ videos }: MovieVideosProps) => {
         <Film className="mr-2" /> Videos & Trailers
       </h3>
       
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {limitedVideos.map((video, index) => (
-          <div key={index} className="aspect-video rounded-lg overflow-hidden">
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${video.key}`}
-              title={video.name || "Movie Trailer"}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
+          <VideoCard key={index} video={video} />
         ))}
       </div>
     </div>
+  );
+};
+
+interface VideoCardProps {
+  video: VideoItem;
+}
+
+const VideoCard = ({ video }: VideoCardProps) => {
+  // Get thumbnail from YouTube
+  const thumbnailUrl = `https://img.youtube.com/vi/${video.key}/mqdefault.jpg`;
+  
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="cursor-pointer group">
+          <div className="relative aspect-video rounded-lg overflow-hidden">
+            <img 
+              src={thumbnailUrl} 
+              alt={video.name || "Movie Trailer"} 
+              className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black/40 rounded-full p-3 group-hover:bg-primary/80 transition-colors">
+                <Play className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-white line-clamp-1">{video.name}</p>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-2xl">
+        <div className="aspect-video w-full">
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${video.key}`}
+            title={video.name || "Movie Trailer"}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
