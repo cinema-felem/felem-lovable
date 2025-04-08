@@ -36,12 +36,13 @@ export function MovieManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [tempMovies, setTempMovies] = useState<ExtendedMovie[]>([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [filterNullTmdbId, setFilterNullTmdbId] = useState(false);
   const { toast } = useToast();
   const pageSize = 10;
 
   useEffect(() => {
     fetchMovies();
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, filterNullTmdbId]);
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -52,6 +53,10 @@ export function MovieManager() {
       
       if (searchQuery) {
         query = query.ilike('title', `%${searchQuery}%`);
+      }
+      
+      if (filterNullTmdbId) {
+        query = query.or('tmdbId.is.null,tmdbId.eq.0');
       }
       
       const from = currentPage * pageSize;
@@ -91,6 +96,11 @@ export function MovieManager() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleFilterNullTmdbId = () => {
+    setFilterNullTmdbId(!filterNullTmdbId);
+    setCurrentPage(0);
   };
 
   const handleEditMovie = (index: number) => {
@@ -217,7 +227,13 @@ export function MovieManager() {
             className="pl-10 bg-cinema-dark-blue/10 border-cinema-dark-blue"
           />
         </div>
-        <Button variant="outline" size="icon" className="border-cinema-dark-blue text-cinema-gold">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className={`border-cinema-dark-blue ${filterNullTmdbId ? 'bg-cinema-gold text-cinema-dark-blue' : 'text-cinema-gold'}`}
+          onClick={toggleFilterNullTmdbId}
+          title="Filter movies without TMDB ID"
+        >
           <Filter className="h-4 w-4" />
         </Button>
       </div>
