@@ -16,6 +16,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { logPageView } from "./utils/analytics";
+import Attribution from "./pages/Attribution";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/movie/:id" element={<MovieDetails />} />
               <Route path="/cinemas" element={<Cinemas />} />
               <Route path="/cinemas/:id" element={<CinemaDetails />} />
+              <Route path="/attribution" element={<Attribution />} />
               
               {/* Admin routes */}
               <Route path="/admin/login" element={<Login />} />
