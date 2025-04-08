@@ -329,7 +329,9 @@ export type Database = {
     }
     Functions: {
       has_role: {
-        Args: { required_role: Database["public"]["Enums"]["app_role"] }
+        Args:
+          | { required_role: Database["public"]["Enums"]["app_role"] }
+          | { required_role: string }
         Returns: boolean
       }
     }

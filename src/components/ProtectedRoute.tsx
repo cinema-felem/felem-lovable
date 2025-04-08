@@ -20,9 +20,9 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
     if (requiredRole && user) {
       const checkRole = async () => {
         try {
-          // Use a typed parameter for the RPC call
+          // Use our has_role function directly
           const { data, error } = await supabase.rpc('has_role', { 
-            required_role: requiredRole as unknown as 'admin'
+            required_role: requiredRole 
           });
           
           if (error) throw error;
