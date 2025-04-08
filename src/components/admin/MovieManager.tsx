@@ -26,6 +26,7 @@ import {
 interface ExtendedMovie extends Movie {
   language?: string;
   format?: string;
+  tmdbId?: number | null;
   isEditing?: boolean;
 }
 
@@ -121,7 +122,7 @@ export function MovieManager() {
           tmdbId,
           updatedAt: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', id.toString());
         
       if (error) throw error;
       
@@ -167,7 +168,7 @@ export function MovieManager() {
       const { error } = await supabase
         .from('Movie')
         .delete()
-        .eq('id', movieId);
+        .eq('id', movieId.toString());
         
       if (error) throw error;
       
