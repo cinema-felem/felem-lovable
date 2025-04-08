@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -64,13 +63,8 @@ const MovieDetails = () => {
             undefined
           );
           
-          // Add unixTime to each showtime for convenience
-          const formattedShowtimes = showtimesData.map(showtime => ({
-            ...showtime,
-            unixTime: parseInt(showtime.time)
-          }));
-          
-          setShowtimes(formattedShowtimes);
+          // The unixTime is already in the right format now
+          setShowtimes(showtimesData);
         }
       } catch (error) {
         console.error("Error loading movie details:", error);
@@ -90,14 +84,7 @@ const MovieDetails = () => {
   const handleDateChange = async (date: Date | undefined) => {
     try {
       const showtimesData = await fetchShowtimesForMovie(movieId, date, undefined);
-      
-      // Add unixTime to each showtime for convenience
-      const formattedShowtimes = showtimesData.map(showtime => ({
-        ...showtime,
-        unixTime: parseInt(showtime.time)
-      }));
-      
-      setShowtimes(formattedShowtimes);
+      setShowtimes(showtimesData);
     } catch (error) {
       console.error("Error updating showtimes:", error);
     }
@@ -111,13 +98,7 @@ const MovieDetails = () => {
         cinemaId
       );
       
-      // Add unixTime to each showtime for convenience
-      const formattedShowtimes = showtimesData.map(showtime => ({
-        ...showtime,
-        unixTime: parseInt(showtime.time)
-      }));
-      
-      setShowtimes(formattedShowtimes);
+      setShowtimes(showtimesData);
     } catch (error) {
       console.error("Error updating showtimes:", error);
     }

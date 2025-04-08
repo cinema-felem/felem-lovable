@@ -96,7 +96,7 @@ export async function fetchShowtimesForCinema(
     
     // Transform the data to match our interface
     return data.map((item) => {
-      const showtime = new Date(item.unixTime * 1000);
+      const showtime = new Date(item.unixTime);
       const movie = item.Movie;
       const tmdbId = movie?.tmdbId;
       const tmdbInfo = tmdbId ? tmdbLookup.get(tmdbId) : null;
@@ -198,11 +198,12 @@ export async function fetchShowtimesForMovie(
         id: showtime.id,
         cinemaId: showtime.cinemaId,
         cinemaName: showtime.Cinema?.name || 'Unknown Cinema',
-        date: format(new Date(showtime.unixTime * 1000), 'yyyy-MM-dd'),
+        date: format(new Date(showtime.unixTime), 'yyyy-MM-dd'),
         time: showtime.unixTime.toString(),
         movieFormat: showtime.movieFormat,
         ticketType: showtime.ticketType,
         link: showtime.link,
+        unixTime: showtime.unixTime,
       };
     });
   } catch (error) {
@@ -303,11 +304,12 @@ export async function fetchAllShowtimes(limit = 100): Promise<Showtime[]> {
         id: showtime.id,
         cinemaId: showtime.cinemaId,
         cinemaName: showtime.Cinema?.name || 'Unknown Cinema',
-        date: new Date(showtime.unixTime * 1000).toISOString().split('T')[0],
+        date: format(new Date(showtime.unixTime), 'yyyy-MM-dd'),
         time: showtime.unixTime.toString(),
         movieFormat: showtime.movieFormat,
         ticketType: showtime.ticketType,
         link: showtime.link,
+        unixTime: showtime.unixTime,
       };
     });
   } catch (error) {

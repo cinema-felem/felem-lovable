@@ -1,4 +1,3 @@
-
 export interface Cinema {
   id: string;
   name: string;
@@ -29,6 +28,7 @@ export interface Showtime {
   movieFormat: string;
   ticketType: string;
   link: string;
+  unixTime: number;
 }
 
 export interface CinemaOption {

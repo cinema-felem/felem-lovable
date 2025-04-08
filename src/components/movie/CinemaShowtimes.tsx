@@ -26,7 +26,7 @@ const CinemaShowtimes = ({ cinemaName, showtimes }: CinemaShowtimesProps) => {
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {showtimes.map((showtime) => {
-          const date = new Date(showtime.unixTime * 1000);
+          const date = new Date(showtime.unixTime);
           
           return (
             <a 
