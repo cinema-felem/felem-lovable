@@ -59,7 +59,7 @@ export async function fetchShowtimesForCinema(
         unixTime, 
         link,
         filmId,
-        Movie(id, title)
+        Movie(id, title, tmdbId)
       `)
       .eq('cinemaId', cinemaId)
       .order('unixTime', { ascending: true });
@@ -137,7 +137,8 @@ export async function fetchShowtimesForCinema(
     const tmdbIds = data
       .map(item => {
         const movie = item.Movie;
-        return movie ? movie.tmdbId : null;
+        if (!movie) return null;
+        return movie.tmdbId;
       })
       .filter(Boolean) as number[];
     
@@ -162,14 +163,16 @@ export async function fetchShowtimesForCinema(
     // Transform the data to match our interface
     return data.map((item) => {
       const showtime = new Date(item.unixTime * 1000);
-      const tmdbInfo = item.Movie?.tmdbId ? tmdbLookup.get(item.Movie.tmdbId) : null;
+      const movie = item.Movie;
+      const tmdbId = movie?.tmdbId;
+      const tmdbInfo = tmdbId ? tmdbLookup.get(tmdbId) : null;
       const image = tmdbInfo?.image as { poster_path?: string } | null;
-      const movieId = item.Movie?.id || '';
+      const movieId = movie?.id || '';
       
       return {
         id: item.id,
         movieId: movieId,
-        movieTitle: item.Movie?.title || 'Unknown Movie',
+        movieTitle: movie?.title || 'Unknown Movie',
         tmdbTitle: tmdbTitles[movieId] || undefined,
         posterPath: image?.poster_path 
           ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
