@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "@/components/HeroSection";
@@ -157,11 +156,11 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
       <Helmet>
-        <title>Felem - Find Movies & Showtimes in Singapore</title>
-        <meta name="description" content="Find the best movies showing at theaters in Singapore. Browse showtimes, cinema locations, and movie ratings to plan your perfect movie night in Singapore." />
+        <title>Felem - Find Movies & Showtimes Near You</title>
+        <meta name="description" content="Find the best movies showing at theaters near you. Browse showtimes, cinema locations, and movie ratings to plan your perfect movie night." />
         <link rel="canonical" href="https://felem.puayhiang.com/" />
-        <meta property="og:title" content="Felem - Find Movies & Showtimes in Singapore" />
-        <meta property="og:description" content="Find the best movies showing at theaters in Singapore. Browse showtimes, cinema locations, and movie ratings to plan your perfect movie night in Singapore." />
+        <meta property="og:title" content="Felem - Find Movies & Showtimes Near You" />
+        <meta property="og:description" content="Find the best movies showing at theaters near you. Browse showtimes, cinema locations, and movie ratings to plan your perfect movie night." />
         <meta property="og:url" content="https://felem.puayhiang.com/" />
         <meta property="og:type" content="website" />
         {featuredMovie && <meta property="og:image" content={featuredMovie.backdrop} />}
@@ -182,11 +181,11 @@ const Index = () => {
         <div className="py-8">
           {loading ? (
             <div className="container mx-auto px-4 text-center py-12">
-              <p className="text-white text-xl">Loading movies showing in Singapore...</p>
+              <p className="text-white text-xl">Loading movies...</p>
             </div>
           ) : (
             <MovieGrid 
-              title="Movies Now Showing in Singapore" 
+              title="Movies Now Showing" 
               movies={movies}
               sortOption={sortOption}
               onSortChange={handleSortChange}
