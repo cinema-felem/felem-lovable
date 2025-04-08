@@ -19,7 +19,6 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState<string>("rating");
   const { toast } = useToast();
-  const [watchlist, setWatchlist] = useState<Set<number | string>>(new Set());
 
   // Load all movies at once
   const loadAllMovies = useCallback(async () => {
@@ -54,26 +53,6 @@ const Index = () => {
       const sortedMovies = [...movies].sort((a, b) => b.rating - a.rating);
       setMovies(sortedMovies);
     }
-  };
-
-  const toggleWatchlist = (movieId: number | string) => {
-    setWatchlist(prev => {
-      const newWatchlist = new Set(prev);
-      if (newWatchlist.has(movieId)) {
-        newWatchlist.delete(movieId);
-        toast({
-          title: "Removed from Watchlist",
-          description: "Movie has been removed from your watchlist",
-        });
-      } else {
-        newWatchlist.add(movieId);
-        toast({
-          title: "Added to Watchlist",
-          description: "Movie has been added to your watchlist",
-        });
-      }
-      return newWatchlist;
-    });
   };
 
   // Initial data load
@@ -136,9 +115,7 @@ const Index = () => {
       <main className="flex-grow">
         {featuredMovie && (
           <HeroSection 
-            featuredMovie={featuredMovie} 
-            onAddToWatchlist={() => toggleWatchlist(featuredMovie.id)} 
-            isInWatchlist={watchlist.has(featuredMovie.id)}
+            featuredMovie={featuredMovie}
           />
         )}
         
