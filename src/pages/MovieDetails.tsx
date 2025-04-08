@@ -16,6 +16,7 @@ import MovieInfo from "@/components/movie/MovieInfo";
 import MovieShowtimes from "@/components/movie/MovieShowtimes";
 import MovieVideos from "@/components/movie/MovieVideos";
 import { logMovieView, logShowtimeInteraction } from "@/utils/analytics";
+import { Helmet } from "react-helmet-async";
 
 interface Showtime {
   id: number;
@@ -51,6 +52,9 @@ const MovieDetails = () => {
         setMovie(movieData);
         
         if (movieData) {
+          // Set page title based on movie title
+          document.title = `${movieData.title} (${movieData.releaseYear || ''}) - Felem Movies`;
+          
           // Log movie view once data is loaded
           logMovieView(movieId, movieData.title);
           
@@ -121,6 +125,10 @@ const MovieDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+        <Helmet>
+          <title>Loading Movie - Felem Movies</title>
+          <meta name="description" content="Loading movie details..." />
+        </Helmet>
         <Navbar />
         <div className="flex flex-grow items-center justify-center">
           <h1 className="text-2xl text-white">Loading movie details...</h1>
@@ -133,6 +141,10 @@ const MovieDetails = () => {
   if (!movie) {
     return (
       <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+        <Helmet>
+          <title>Movie Not Found - Felem Movies</title>
+          <meta name="description" content="Movie not found" />
+        </Helmet>
         <Navbar />
         <div className="flex flex-grow items-center justify-center">
           <h1 className="text-2xl text-white">Movie not found</h1>
@@ -142,8 +154,51 @@ const MovieDetails = () => {
     );
   }
   
+  // Generate a clean description from the movie overview
+  const metaDescription = movie.overview 
+    ? `${movie.title} (${movie.releaseYear || ''}) - ${movie.overview.slice(0, 155)}...` 
+    : `View showtimes, ratings, and details for ${movie.title} (${movie.releaseYear || ''}).`;
+  
+  // Create structured data for the movie
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Movie",
+    "name": movie.title,
+    "description": movie.overview,
+    "image": movie.posterPath,
+    "datePublished": movie.releaseDate,
+    "director": movie.director ? {
+      "@type": "Person",
+      "name": movie.director
+    } : undefined,
+    "actor": movie.cast?.map((actor: string) => ({
+      "@type": "Person",
+      "name": actor
+    })),
+    "aggregateRating": movie.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": movie.rating,
+      "bestRating": "10",
+      "worstRating": "1"
+    } : undefined,
+    "genre": movie.genres
+  };
+  
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+      <Helmet>
+        <title>{`${movie.title} (${movie.releaseYear || ''}) - Felem Movies`}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={`${movie.title} (${movie.releaseYear || ''}) - Felem Movies`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={movie.posterPath} />
+        <meta property="og:type" content="video.movie" />
+        <link rel="canonical" href={`https://felem.lovable.app/movie/${movieId}`} />
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
+      
       <Navbar />
       
       <main className="flex-grow">
@@ -183,4 +238,3 @@ const MovieDetails = () => {
 };
 
 export default MovieDetails;
-

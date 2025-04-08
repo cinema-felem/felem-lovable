@@ -1,5 +1,5 @@
-
 import { useEffect, useState, useCallback } from "react";
+import { Helmet } from "react-helmet-async";
 import HeroSection from "@/components/HeroSection";
 import MovieGrid from "@/components/MovieGrid";
 import Navbar from "@/components/Navbar";
@@ -20,7 +20,6 @@ const Index = () => {
   const [sortOption, setSortOption] = useState<string>("rating");
   const { toast } = useToast();
 
-  // Load all movies at once
   const loadAllMovies = useCallback(async () => {
     try {
       setLoading(true);
@@ -47,15 +46,10 @@ const Index = () => {
   const handleSortChange = (value: string) => {
     setSortOption(value);
     
-    // For client-side sorting if value is 'rating'
     if (value === 'rating' && movies.length > 0) {
-      // Sort movies by rating (highest first)
       const sortedMovies = [...movies].sort((a, b) => b.rating - a.rating);
       setMovies(sortedMovies);
-    }
-    // For client-side sorting and filtering if value is 'hipster'
-    else if (value === 'hipster' && movies.length > 0) {
-      // Filter movies that have a letterboxd rating and sort by it
+    } else if (value === 'hipster' && movies.length > 0) {
       const filteredMovies = [...movies].filter(movie => {
         if (movie.allRatings) {
           return movie.allRatings.some(rating => rating.source === 'letterboxd');
@@ -64,7 +58,6 @@ const Index = () => {
       });
       
       if (filteredMovies.length > 0) {
-        // Sort by letterboxd rating (highest first)
         const sortedMovies = filteredMovies.sort((a, b) => {
           const aRating = a.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
           const bRating = b.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
@@ -81,13 +74,11 @@ const Index = () => {
     }
   };
 
-  // Initial data load
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         setLoading(true);
         
-        // Load multiple featured movies for carousel
         const featuredMoviesData = [];
         for (let i = 0; i < 5; i++) {
           const featured = await fetchFeaturedMovie();
@@ -96,18 +87,15 @@ const Index = () => {
         
         setFeaturedMovies(featuredMoviesData);
         
-        // Set initial featured movie
         if (featuredMoviesData.length > 0) {
           setFeaturedMovie(featuredMoviesData[0]);
         }
         
         const { movies: allMovies } = await fetchPopularMovies(0, 100, sortOption);
         
-        // Client-side sort if needed
         if (sortOption === 'rating') {
           setMovies(allMovies.sort((a, b) => b.rating - a.rating));
         } else if (sortOption === 'hipster') {
-          // Filter and sort by letterboxd rating
           const filteredMovies = allMovies.filter(movie => {
             if (movie.allRatings) {
               return movie.allRatings.some(rating => rating.source === 'letterboxd');
@@ -142,9 +130,7 @@ const Index = () => {
     loadInitialData();
   }, [sortOption, toast]);
 
-  // Update featured movie on page navigation
   useEffect(() => {
-    // Only run if we have more than one featured movie
     if (featuredMovies.length > 1) {
       const nextIndex = (currentFeaturedIndex + 1) % featuredMovies.length;
       setCurrentFeaturedIndex(nextIndex);
@@ -152,8 +138,37 @@ const Index = () => {
     }
   }, []);
 
+  const moviesStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": movies.slice(0, 10).map((movie, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Movie",
+        "name": movie.title,
+        "image": movie.posterPath,
+        "url": `https://felem.lovable.app/movie/${movie.id}`
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-cinema-dark-blue">
+      <Helmet>
+        <title>Felem - Discover and Curate the Best Movies</title>
+        <meta name="description" content="Discover the best movies from around the world, find showtimes, read reviews, and explore carefully curated film collections." />
+        <link rel="canonical" href="https://felem.lovable.app/" />
+        <meta property="og:title" content="Felem - Discover and Curate the Best Movies" />
+        <meta property="og:description" content="Discover the best movies from around the world, find showtimes, read reviews, and explore carefully curated film collections." />
+        <meta property="og:url" content="https://felem.lovable.app/" />
+        <meta property="og:type" content="website" />
+        {featuredMovie && <meta property="og:image" content={featuredMovie.backdrop} />}
+        <script type="application/ld+json">
+          {JSON.stringify(moviesStructuredData)}
+        </script>
+      </Helmet>
+      
       <Navbar />
       
       <main className="flex-grow">

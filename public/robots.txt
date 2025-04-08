@@ -1,3 +1,17 @@
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location (future implementation)
+# Sitemap: https://felem.lovable.app/sitemap.xml
+
+# Disallow admin routes
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/dashboard
+
+# Specific bot instructions
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +24,3 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
