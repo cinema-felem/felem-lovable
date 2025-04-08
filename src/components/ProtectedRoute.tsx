@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -23,43 +24,49 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
         try {
           console.log("Checking role for user:", user.id);
           
-          // Check if user_roles entry exists for this user
-          const { data: userRoles, error: rolesError } = await supabase
-            .from('user_roles')
-            .select('*')
-            .eq('user_id', user.id);
-            
-          if (rolesError) {
-            throw new Error(`Error fetching user roles: ${rolesError.message}`);
+          // Use the has_role RPC function directly
+          // This avoids querying the user_roles table directly which can cause recursion
+          const { data, error } = await supabase.rpc('has_role', { 
+            required_role: requiredRole 
+          });
+          
+          if (error) {
+            throw new Error(`Role check failed: ${error.message}`);
           }
           
-          console.log("User roles:", userRoles);
+          console.log("Role check result:", data);
           
-          if (!userRoles || userRoles.length === 0) {
-            // No roles found, create admin role for this user
-            console.log("No roles found, creating admin role");
+          // If user doesn't have the role, try to create it
+          if (!data) {
+            console.log("No admin role found, attempting to create one");
+            // Use an insert with on conflict do nothing to avoid duplicate roles
             const { error: insertError } = await supabase
               .from('user_roles')
               .insert([{ user_id: user.id, role: requiredRole }]);
               
             if (insertError) {
-              throw new Error(`Error assigning admin role: ${insertError.message}`);
+              // If we can't insert, check if it's a permission issue or something else
+              if (insertError.message.includes('permission denied')) {
+                setErrorMessage(`You don't have permission to assign the ${requiredRole} role`);
+                setHasRequiredRole(false);
+              } else {
+                throw new Error(`Error assigning admin role: ${insertError.message}`);
+              }
+            } else {
+              // Role was successfully added, check again
+              const { data: newCheck, error: recheckError } = await supabase.rpc('has_role', { 
+                required_role: requiredRole 
+              });
+              
+              if (recheckError) throw new Error(`Role recheck failed: ${recheckError.message}`);
+              
+              setHasRequiredRole(newCheck);
+              setErrorMessage(newCheck ? null : `Role was created but access still denied`);
             }
-            
+          } else {
+            // User already has the role
             setHasRequiredRole(true);
             setErrorMessage(null);
-          } else {
-            // Otherwise check with RPC function
-            console.log("Checking role with RPC function");
-            const { data, error } = await supabase.rpc('has_role', { 
-              required_role: requiredRole 
-            });
-            
-            if (error) throw new Error(`Role check failed: ${error.message}`);
-            
-            console.log("Role check result:", data);
-            setHasRequiredRole(data);
-            setErrorMessage(data ? null : `You don't have the required ${requiredRole} role`);
           }
         } catch (error: any) {
           console.error("Error checking role:", error);
