@@ -7,7 +7,7 @@ interface MovieSidebarProps {
     title: string;
     tmdbTitle?: string;
     posterPath: string;
-    streamingProviders?: string[];
+    streamingProviders?: string[] | null;
     externalIds?: {
       imdb_id?: string;
       facebook_id?: string;

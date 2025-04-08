@@ -263,6 +263,14 @@ export async function fetchMovieById(id: string) {
   const videos = tmdbData.videos as any[] | null;
   const externalIds = tmdbData.external_ids as any | null;
 
+  if (
+    movieData.title === 'M' || 
+    movieData.title === 'Blue Velvet' || 
+    movieData.title === 'Dazed and Confused'
+  ) {
+    console.log(`Streaming data for ${movieData.title}:`, streaming);
+  }
+
   const allRatings = ratings ? ratings.map(rating => ({
     source: rating.source || 'Unknown',
     rating: rating.rating || 0,
@@ -272,7 +280,32 @@ export async function fetchMovieById(id: string) {
   const allRatingValues = allRatings.map(r => r.rating);
   const medianRating = calculateMedianRating(allRatingValues);
 
-  const streamingProviders = streaming?.providers || [];
+  let streamingProviders: string[] = [];
+  if (streaming && typeof streaming === 'object') {
+    if (Array.isArray(streaming.providers)) {
+      streamingProviders = streaming.providers;
+    } 
+    else if (streaming.providers && typeof streaming.providers === 'object') {
+      const providerCountries = Object.values(streaming.providers);
+      const allPlatforms = new Set<string>();
+      providerCountries.forEach((country: any) => {
+        if (country && Array.isArray(country)) {
+          country.forEach((platform: string) => {
+            allPlatforms.add(platform);
+          });
+        } else if (country && typeof country === 'object') {
+          Object.values(country).forEach((platforms: any) => {
+            if (Array.isArray(platforms)) {
+              platforms.forEach((platform: string) => {
+                allPlatforms.add(platform);
+              });
+            }
+          });
+        }
+      });
+      streamingProviders = Array.from(allPlatforms);
+    }
+  }
 
   const movieVideos = videos || [];
 

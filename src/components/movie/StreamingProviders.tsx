@@ -3,10 +3,11 @@ import { Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface StreamingProvidersProps {
-  providers?: string[];
+  providers?: string[] | null;
 }
 
 const StreamingProviders = ({ providers }: StreamingProvidersProps) => {
+  // Return null if providers is null, undefined, or an empty array
   if (!providers || providers.length === 0) return null;
   
   return (
