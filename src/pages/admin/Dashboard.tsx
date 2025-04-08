@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { GarbageTitleManager } from "@/components/admin/GarbageTitleManager";
+import { MovieManager } from "@/components/admin/MovieManager";
 
 export default function Dashboard() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("garbage-titles");
 
   const handleSignOut = async () => {
     await signOut();
@@ -32,9 +34,20 @@ export default function Dashboard() {
       </div>
 
       <div className="container mx-auto py-8 px-4">
-        <div className="p-4 bg-white rounded-md shadow">
-          <GarbageTitleManager />
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="garbage-titles">Garbage Titles</TabsTrigger>
+            <TabsTrigger value="movies">Movies</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="garbage-titles" className="p-4 bg-white rounded-md shadow">
+            <GarbageTitleManager />
+          </TabsContent>
+          
+          <TabsContent value="movies" className="p-4 bg-white rounded-md shadow">
+            <MovieManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
