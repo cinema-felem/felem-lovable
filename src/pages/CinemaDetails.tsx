@@ -40,13 +40,14 @@ const CinemaDetails = () => {
       acc[showtime.movieId] = {
         movieId: showtime.movieId,
         title: showtime.movieTitle,
+        tmdbTitle: showtime.tmdbTitle,
         posterPath: showtime.posterPath,
         showtimes: []
       };
     }
     acc[showtime.movieId].showtimes.push(showtime);
     return acc;
-  }, {} as Record<string, { movieId: string, title: string, posterPath: string, showtimes: typeof showtimes }>);
+  }, {} as Record<string, { movieId: string, title: string, tmdbTitle?: string, posterPath: string, showtimes: typeof showtimes }>);
 
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -140,7 +141,7 @@ const CinemaDetails = () => {
                       <Link to={`/movie/${movie.movieId}`} className="md:w-1/4 lg:w-1/6">
                         <img 
                           src={movie.posterPath} 
-                          alt={movie.title}
+                          alt={movie.tmdbTitle || movie.title}
                           className="w-full h-auto object-cover"
                         />
                       </Link>
@@ -148,7 +149,7 @@ const CinemaDetails = () => {
                         <CardHeader className="pb-2">
                           <CardTitle className="text-white">
                             <Link to={`/movie/${movie.movieId}`} className="hover:text-cinema-gold transition-colors">
-                              {movie.title}
+                              {movie.tmdbTitle || movie.title}
                             </Link>
                           </CardTitle>
                         </CardHeader>

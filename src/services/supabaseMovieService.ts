@@ -126,6 +126,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     return {
       id: movie.id,
       title: movie.title,
+      tmdbTitle: tmdb.title,
       posterPath: image?.poster_path 
         ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
         : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
@@ -235,6 +236,7 @@ export async function fetchMovieById(id: string) {
     id: movieData.id,
     tmdbId: tmdbData.id,
     title: movieData.title,
+    tmdbTitle: tmdbData.title,
     originalTitle: tmdbData.original_title,
     originalLanguage: tmdbData.original_language,
     posterPath: image?.poster_path ? `https://image.tmdb.org/t/p/w500${image.poster_path}` : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
@@ -288,6 +290,7 @@ function transformTmdbToMovies(tmdbMovies: any[]): Movie[] {
     return {
       id: movie.id,
       title: movie.title,
+      tmdbTitle: movie.title,
       posterPath: image?.poster_path 
         ? `https://image.tmdb.org/t/p/w500${image.poster_path}` 
         : "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&h=750&q=80",
@@ -322,6 +325,7 @@ export async function fetchFeaturedMovie() {
   return {
     id: data.id,
     title: data.title,
+    tmdbTitle: data.title,
     backdrop: image?.backdrop_path 
       ? `https://image.tmdb.org/t/p/original${image.backdrop_path}` 
       : "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",

@@ -8,12 +8,15 @@ interface MovieCardProps {
 }
 
 const MovieCard = ({ movie }: MovieCardProps) => {
+  // Prioritize tmdbTitle if available, otherwise use title
+  const displayTitle = movie.tmdbTitle || movie.title;
+  
   return (
     <Link to={`/movie/${movie.id}`} className="group">
       <div className="relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-105 poster-shadow">
         <img
           src={movie.posterPath}
-          alt={`${movie.title} poster`}
+          alt={`${displayTitle} poster`}
           className="h-[300px] w-full object-cover object-center"
           loading="lazy"
         />
@@ -23,7 +26,7 @@ const MovieCard = ({ movie }: MovieCardProps) => {
               <Star className="w-4 h-4 text-cinema-gold fill-cinema-gold mr-1" />
               <span className="text-white text-sm">{movie.rating.toFixed(1)}</span>
             </div>
-            <h3 className="text-white font-semibold line-clamp-1">{movie.title}</h3>
+            <h3 className="text-white font-semibold line-clamp-1">{displayTitle}</h3>
             <p className="text-gray-300 text-sm">{movie.releaseYear}</p>
           </div>
         </div>

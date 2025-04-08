@@ -15,6 +15,7 @@ interface MovieInfoProps {
   movie: {
     originalTitle?: string;
     title: string;
+    tmdbTitle?: string;
     releaseYear?: string;
     originalLanguage?: string;
     parental?: string;
@@ -29,7 +30,8 @@ interface MovieInfoProps {
 }
 
 const MovieInfo = ({ movie }: MovieInfoProps) => {
-  const displayTitle = movie.title;
+  // Prioritize TMDB title, fall back to movie title
+  const displayTitle = movie.tmdbTitle || movie.title;
   
   return (
     <div className="flex-grow">
