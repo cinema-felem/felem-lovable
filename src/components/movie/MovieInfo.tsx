@@ -36,9 +36,9 @@ const MovieInfo = ({ movie }: MovieInfoProps) => {
   return (
     <div className="flex-grow">
       <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 text-shadow animate-slide-up">
-        {movie.originalTitle || displayTitle}
+        {displayTitle}
         {movie.originalTitle && movie.originalTitle !== displayTitle && (
-          <span className="block text-lg text-gray-400 mt-1">{displayTitle}</span>
+          <span className="block text-lg text-gray-400 mt-1">{movie.originalTitle}</span>
         )}
       </h1>
       
