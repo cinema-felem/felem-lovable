@@ -19,4 +19,11 @@ export interface Movie {
     site: string;
     name: string;
   }[];
+  externalIds?: {
+    imdb_id?: string;
+    facebook_id?: string;
+    instagram_id?: string;
+    twitter_id?: string;
+    letterboxd_id?: string;
+  };
 }

@@ -261,6 +261,7 @@ export async function fetchMovieById(id: string) {
   const genres = tmdbData.genres as GenreJson[] | null;
   const streaming = tmdbData.streaming as StreamingJson | null;
   const videos = tmdbData.videos as any[] | null;
+  const externalIds = tmdbData.external_ids as any | null;
 
   const allRatings = ratings ? ratings.map(rating => ({
     source: rating.source || 'Unknown',
@@ -299,6 +300,7 @@ export async function fetchMovieById(id: string) {
     language: movieData.language,
     format: movieData.format,
     videos: movieVideos,
+    externalIds: externalIds,
   };
 }
 

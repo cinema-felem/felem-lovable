@@ -1,5 +1,6 @@
 
 import StreamingProviders from "./StreamingProviders";
+import ExternalLinks from "./ExternalLinks";
 
 interface MovieSidebarProps {
   movie: {
@@ -7,6 +8,13 @@ interface MovieSidebarProps {
     tmdbTitle?: string;
     posterPath: string;
     streamingProviders?: string[];
+    externalIds?: {
+      imdb_id?: string;
+      facebook_id?: string;
+      instagram_id?: string;
+      twitter_id?: string;
+      letterboxd_id?: string;
+    };
   };
 }
 
@@ -24,6 +32,9 @@ const MovieSidebar = ({ movie }: MovieSidebarProps) => {
       
       <div className="mt-6 space-y-4">
         <StreamingProviders providers={movie.streamingProviders} />
+        
+        {/* Add External Links */}
+        <ExternalLinks externalIds={movie.externalIds} title={displayTitle} />
       </div>
     </div>
   );
