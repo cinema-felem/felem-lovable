@@ -7,37 +7,31 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Mail, LogIn } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signInWithMagicLink, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleMagicLinkSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await signUp(email, password);
-        if (error) throw error;
-        toast({
-          title: "Account created!",
-          description: "Please verify your email to complete signup.",
-        });
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) throw error;
-        navigate("/admin");
-      }
+      const { error } = await signInWithMagicLink(email);
+      if (error) throw error;
+      
+      toast({
+        title: "Check your email",
+        description: "We've sent you a magic link to sign in.",
+      });
     } catch (error: any) {
       toast({
         title: "Authentication error",
-        description: error.message || "Failed to sign in",
+        description: error.message || "Failed to send magic link",
         variant: "destructive",
       });
     } finally {
@@ -45,19 +39,30 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // No need to navigate, OAuth redirect will handle this
+    } catch (error: any) {
+      toast({
+        title: "Authentication error",
+        description: error.message || "Failed to sign in with Google",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-cinema-dark-blue">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? "Create Account" : "Admin Login"}</CardTitle>
+          <CardTitle>Admin Login</CardTitle>
           <CardDescription>
-            {isSignUp
-              ? "Create a new admin account"
-              : "Sign in to access the admin portal"}
+            Sign in to access the admin portal
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+        <form onSubmit={handleMagicLinkSubmit}>
+          <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -69,35 +74,35 @@ export default function Login() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading
-                ? "Loading..."
-                : isSignUp
-                ? "Create Account"
-                : "Login"}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading}
             >
-              {isSignUp
-                ? "Already have an account? Login"
-                : "Need an account? Sign Up"}
+              {isLoading ? "Sending..." : "Sign in with Magic Link"}
+              <Mail className="ml-2 h-4 w-4" />
             </Button>
-          </CardFooter>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-muted-foreground/30" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full"
+              onClick={handleGoogleSignIn}
+            >
+              Sign in with Google
+              <LogIn className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
         </form>
       </Card>
     </div>

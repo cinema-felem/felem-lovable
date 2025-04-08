@@ -6,14 +6,11 @@ import { User, Session } from '@supabase/supabase-js';
 type AuthContextType = {
   user: User | null;
   session: Session | null;
-  signIn: (email: string, password: string) => Promise<{
+  signInWithMagicLink: (email: string) => Promise<{
     error: Error | null;
     data: { user: User | null; session: Session | null };
   }>;
-  signUp: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: { user: User | null; session: Session | null };
-  }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
 };
@@ -47,17 +44,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = (email: string, password: string) => {
-    return supabase.auth.signInWithPassword({
+  const signInWithMagicLink = (email: string) => {
+    return supabase.auth.signInWithOtp({
       email,
-      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin`,
+      },
     });
   };
 
-  const signUp = (email: string, password: string) => {
-    return supabase.auth.signUp({
-      email,
-      password,
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/admin`,
+      },
     });
   };
 
@@ -68,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     session,
-    signIn,
-    signUp,
+    signInWithMagicLink,
+    signInWithGoogle,
     signOut,
     loading,
   };
