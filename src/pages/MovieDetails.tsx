@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -193,7 +192,7 @@ const MovieDetails = () => {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={movie.posterPath} />
         <meta property="og:type" content="video.movie" />
-        <link rel="canonical" href={`https://felem.lovable.app/movie/${movieId}`} />
+        <link rel="canonical" href={`https://felem.puayhiang.com/movie/${movieId}`} />
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>

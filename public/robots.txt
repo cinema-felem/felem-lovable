@@ -4,7 +4,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location (future implementation)
-# Sitemap: https://felem.lovable.app/sitemap.xml
+# Sitemap: https://felem.puayhiang.com/sitemap.xml
 
 # Disallow admin routes
 Disallow: /admin/

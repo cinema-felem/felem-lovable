@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "@/components/HeroSection";
@@ -148,7 +149,7 @@ const Index = () => {
         "@type": "Movie",
         "name": movie.title,
         "image": movie.posterPath,
-        "url": `https://felem.lovable.app/movie/${movie.id}`
+        "url": `https://felem.puayhiang.com/movie/${movie.id}`
       }
     }))
   };
@@ -158,10 +159,10 @@ const Index = () => {
       <Helmet>
         <title>Felem - Discover and Curate the Best Movies</title>
         <meta name="description" content="Discover the best movies from around the world, find showtimes, read reviews, and explore carefully curated film collections." />
-        <link rel="canonical" href="https://felem.lovable.app/" />
+        <link rel="canonical" href="https://felem.puayhiang.com/" />
         <meta property="og:title" content="Felem - Discover and Curate the Best Movies" />
         <meta property="og:description" content="Discover the best movies from around the world, find showtimes, read reviews, and explore carefully curated film collections." />
-        <meta property="og:url" content="https://felem.lovable.app/" />
+        <meta property="og:url" content="https://felem.puayhiang.com/" />
         <meta property="og:type" content="website" />
         {featuredMovie && <meta property="og:image" content={featuredMovie.backdrop} />}
         <script type="application/ld+json">
