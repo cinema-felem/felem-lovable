@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-interface FeaturedMovie {
+export interface FeaturedMovie {
   id: number;
   title: string;
   tmdbTitle?: string;

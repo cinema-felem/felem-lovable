@@ -1,8 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { calculateMedianRating } from "@/utils/ratingUtils";
+import { ImageJson, RatingsJson, GenreJson, StreamingJson, MovieWithDetails } from "./types";
 
-export async function fetchMovieById(id: string) {
+export async function fetchMovieById(id: string): Promise<MovieWithDetails | null> {
   const { data: movieData, error: movieError } = await supabase
     .from('Movie')
     .select('*, tmdbId')
@@ -49,10 +50,10 @@ export async function fetchMovieById(id: string) {
     };
   }
 
-  const image = tmdbData.image as {poster_path?: string, backdrop_path?: string} | null;
-  const ratings = tmdbData.ratings as {source?: string, rating?: number, votes?: number}[] | null;
-  const genres = tmdbData.genres as {id?: number, name?: string}[] | null;
-  const streaming = tmdbData.streaming as {providers?: string[] | {[key: string]: any}} | null;
+  const image = tmdbData.image as ImageJson | null;
+  const ratings = tmdbData.ratings as RatingsJson[] | null;
+  const genres = tmdbData.genres as GenreJson[] | null;
+  const streaming = tmdbData.streaming as StreamingJson | null;
   const videos = tmdbData.videos as any[] | null;
   const externalIds = tmdbData.external_ids as any | null;
 

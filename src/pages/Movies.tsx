@@ -5,7 +5,7 @@ import MovieGrid from "@/components/MovieGrid";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Movie } from "@/components/MovieCard.d";
-import { fetchPopularMovies } from "@/services/supabaseMovieService";
+import { fetchPopularMovies } from "@/services/movie";
 
 const Movies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);

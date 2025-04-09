@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
-import { transformTmdbToMovies, TmdbMovie } from "./utils";
+import { transformTmdbToMovies, TmdbMovie, Json } from "./utils";
 
 export async function searchMovies(query: string): Promise<Movie[]> {
   const { data, error } = await supabase

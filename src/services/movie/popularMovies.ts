@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { calculateMedianRating } from "@/utils/ratingUtils";
 import { transformTmdbToMovies } from "./utils";
+import { ImageJson, RatingsJson, GenreJson } from "./types";
 
 export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'): Promise<{movies: Movie[], hasMore: boolean}> {
   const from = page * limit;
@@ -114,9 +115,9 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       };
     }
     
-    const image = tmdb.image as {poster_path?: string} | null;
-    const ratings = tmdb.ratings as {source?: string, rating?: number, votes?: number}[] | null;
-    const genres = tmdb.genres as {id?: number, name?: string}[] | null;
+    const image = tmdb.image as ImageJson | null;
+    const ratings = tmdb.ratings as RatingsJson[] | null;
+    const genres = tmdb.genres as GenreJson[] | null;
     
     const allRatingValues = ratings ? ratings.map(r => r.rating || 0).filter(r => r > 0) : [];
     const medianRating = calculateMedianRating(allRatingValues);
