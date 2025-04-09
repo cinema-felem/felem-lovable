@@ -3,7 +3,7 @@ import { Movie } from "@/components/MovieCard.d";
 import { calculateMedianRating } from "@/utils/ratingUtils";
 
 // Generic Json type to match what Supabase returns
-type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export interface TmdbMovie {
   id: number;
