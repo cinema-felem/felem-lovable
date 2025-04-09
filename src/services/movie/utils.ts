@@ -2,17 +2,21 @@
 import { Movie } from "@/components/MovieCard.d";
 import { calculateMedianRating } from "@/utils/ratingUtils";
 
-interface TmdbMovie {
+// Generic Json type to match what Supabase returns
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+export interface TmdbMovie {
   id: number;
   title: string;
-  image?: {poster_path?: string} | null;
+  image?: Json | null;
   release_date?: string;
-  ratings?: {source?: string, rating?: number, votes?: number}[] | null;
-  genres?: {id?: number, name?: string}[] | null;
+  ratings?: Json | null;
+  genres?: Json | null;
 }
 
 export function transformTmdbToMovies(tmdbMovies: TmdbMovie[]): Movie[] {
   return tmdbMovies.map(movie => {
+    // Safely cast the JSON fields to their expected types
     const image = movie.image as {poster_path?: string} | null;
     const ratings = movie.ratings as {source?: string, rating?: number, votes?: number}[] | null; 
     const genres = movie.genres as {id?: number, name?: string}[] | null;

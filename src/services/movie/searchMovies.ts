@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
-import { transformTmdbToMovies } from "./utils";
+import { transformTmdbToMovies, TmdbMovie } from "./utils";
 
 export async function searchMovies(query: string): Promise<Movie[]> {
   const { data, error } = await supabase
@@ -15,7 +15,7 @@ export async function searchMovies(query: string): Promise<Movie[]> {
     return [];
   }
 
-  return transformTmdbToMovies(data || []);
+  return transformTmdbToMovies(data as TmdbMovie[] || []);
 }
 
 export async function fetchTopRatedMovies(): Promise<Movie[]> {
@@ -29,7 +29,7 @@ export async function fetchTopRatedMovies(): Promise<Movie[]> {
     return [];
   }
 
-  return transformTmdbToMovies(data || []);
+  return transformTmdbToMovies(data as TmdbMovie[] || []);
 }
 
 export async function fetchTrendingMovies(): Promise<Movie[]> {
@@ -42,5 +42,5 @@ export async function fetchTrendingMovies(): Promise<Movie[]> {
     return [];
   }
 
-  return transformTmdbToMovies(data || []);
+  return transformTmdbToMovies(data as TmdbMovie[] || []);
 }
