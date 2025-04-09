@@ -1,9 +1,10 @@
+
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { fetchMovieById } from "@/services/supabaseMovieService";
+import { fetchMovieById } from "@/services/movie";
 import { 
   fetchShowtimesForMovie, 
   fetchCinemasWithShowtimesForMovie, 

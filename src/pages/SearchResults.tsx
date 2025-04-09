@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MovieCard from "@/components/MovieCard";
 import { Movie } from "@/components/MovieCard.d";
-import { searchMovies } from "@/services/supabaseMovieService";
+import { searchMovies } from "@/services/movie";
 import { useToast } from "@/hooks/use-toast";
 
 const SearchResults = () => {
