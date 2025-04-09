@@ -6,14 +6,11 @@ import MovieGrid from "@/components/MovieGrid";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Movie } from "@/components/MovieCard.d";
-import { 
-  fetchFeaturedMovie, 
-  fetchPopularMovies
-} from "@/services/supabaseMovieService";
+import { fetchFeaturedMovie, fetchPopularMovies } from "@/services/movie";
 import { useToast } from "@/hooks/use-toast";
+import FeaturedCarousel from "@/components/FeaturedCarousel";
 
 const Index = () => {
-  const [featuredMovie, setFeaturedMovie] = useState<any>(null);
   const [featuredMovies, setFeaturedMovies] = useState<any[]>([]);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -88,10 +85,6 @@ const Index = () => {
         
         setFeaturedMovies(featuredMoviesData);
         
-        if (featuredMoviesData.length > 0) {
-          setFeaturedMovie(featuredMoviesData[0]);
-        }
-        
         const { movies: allMovies } = await fetchPopularMovies(0, 100, sortOption);
         
         if (sortOption === 'rating') {
@@ -135,7 +128,6 @@ const Index = () => {
     if (featuredMovies.length > 1) {
       const nextIndex = (currentFeaturedIndex + 1) % featuredMovies.length;
       setCurrentFeaturedIndex(nextIndex);
-      setFeaturedMovie(featuredMovies[nextIndex]);
     }
   }, []);
 
@@ -164,7 +156,7 @@ const Index = () => {
         <meta property="og:description" content="Discover the best movies from around the world, find showtimes, read reviews, and explore carefully curated film collections." />
         <meta property="og:url" content="https://felem.puayhiang.com/" />
         <meta property="og:type" content="website" />
-        {featuredMovie && <meta property="og:image" content={featuredMovie.backdrop} />}
+        {featuredMovies[currentFeaturedIndex] && <meta property="og:image" content={featuredMovies[currentFeaturedIndex].backdrop} />}
         <script type="application/ld+json">
           {JSON.stringify(moviesStructuredData)}
         </script>
@@ -173,9 +165,9 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-grow">
-        {featuredMovie && (
+        {featuredMovies.length > 0 && (
           <HeroSection 
-            featuredMovie={featuredMovie}
+            featuredMovie={featuredMovies[currentFeaturedIndex]}
           />
         )}
         
