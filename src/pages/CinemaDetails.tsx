@@ -62,10 +62,26 @@ const CinemaDetails = () => {
     setSelectedDate(date);
   };
 
-  // Set the first available date as default when dates are loaded
+  // Set default date when dates are loaded
   useEffect(() => {
     if (availableDates.length > 0 && !selectedDate) {
-      setSelectedDate(availableDates[0]);
+      // Get today's date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Find today's date in the available dates, or the closest future date
+      let defaultDate = availableDates.find(date => 
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+      
+      // If today is not available, use the first available date
+      if (!defaultDate) {
+        defaultDate = availableDates[0];
+      }
+      
+      setSelectedDate(defaultDate);
     }
   }, [availableDates, selectedDate]);
 

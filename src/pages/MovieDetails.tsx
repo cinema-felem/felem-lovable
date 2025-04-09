@@ -66,10 +66,26 @@ const MovieDetails = () => {
           const cinemasData = await fetchCinemasWithShowtimesForMovie(movieId);
           setCinemas(cinemasData);
           
+          // Get today's date to use as default if available
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // Find today's date in the available dates, or the closest future date
+          let defaultDate = datesData.find(date => 
+            date.getFullYear() === today.getFullYear() &&
+            date.getMonth() === today.getMonth() &&
+            date.getDate() === today.getDate()
+          );
+          
+          // If today is not available, use the first available date
+          if (!defaultDate && datesData.length > 0) {
+            defaultDate = datesData[0];
+          }
+          
           // Pass the movie UUID to fetch showtimes with the selected filters
           const showtimesData = await fetchShowtimesForMovie(
             movieId, 
-            datesData.length > 0 ? datesData[0] : undefined,
+            defaultDate,
             undefined
           );
           
@@ -102,9 +118,25 @@ const MovieDetails = () => {
   
   const handleCinemaChange = async (cinemaId: string | undefined) => {
     try {
+      // Get today's date to use as default if available
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Find today's date in the available dates, or the closest future date
+      let defaultDate = availableDates.find(date => 
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+      
+      // If today is not available, use the first available date
+      if (!defaultDate && availableDates.length > 0) {
+        defaultDate = availableDates[0];
+      }
+      
       const showtimesData = await fetchShowtimesForMovie(
         movieId,
-        availableDates.length > 0 ? availableDates[0] : undefined,
+        defaultDate,
         cinemaId
       );
       

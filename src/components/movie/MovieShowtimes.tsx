@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ticket, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShowtimeFilter from "@/components/ShowtimeFilter";
@@ -33,10 +33,31 @@ const MovieShowtimes = ({
   onDateChange,
   onCinemaChange
 }: MovieShowtimesProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    availableDates.length > 0 ? availableDates[0] : undefined
-  );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedCinemaId, setSelectedCinemaId] = useState<string | undefined>(undefined);
+  
+  // Set default date when available dates change
+  useEffect(() => {
+    if (availableDates.length > 0 && !selectedDate) {
+      // Get today's date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Find today's date in the available dates
+      let defaultDate = availableDates.find(date => 
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+      
+      // If today is not available, use the first available date
+      if (!defaultDate) {
+        defaultDate = availableDates[0];
+      }
+      
+      setSelectedDate(defaultDate);
+    }
+  }, [availableDates, selectedDate]);
   
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -51,9 +72,25 @@ const MovieShowtimes = ({
   };
   
   const clearFilters = () => {
-    setSelectedDate(availableDates.length > 0 ? availableDates[0] : undefined);
+    // Get today's date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Find today's date in the available dates
+    let defaultDate = availableDates.find(date => 
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+    
+    // If today is not available, use the first available date
+    if (!defaultDate && availableDates.length > 0) {
+      defaultDate = availableDates[0];
+    }
+    
+    setSelectedDate(defaultDate);
     setSelectedCinemaId(undefined);
-    onDateChange(availableDates.length > 0 ? availableDates[0] : undefined);
+    onDateChange(defaultDate);
     onCinemaChange(undefined);
   };
   
