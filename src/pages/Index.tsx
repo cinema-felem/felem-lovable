@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "@/components/HeroSection";
@@ -182,6 +181,7 @@ const Index = () => {
               movies={movies}
               sortOption={sortOption}
               onSortChange={handleSortChange}
+              showOnlyWithShowtimes={true}
             />
           )}
         </div>
