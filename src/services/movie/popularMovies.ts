@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Movie } from "@/components/MovieCard.d";
 import { calculateMedianRating } from "@/utils/ratingUtils";
@@ -168,7 +167,7 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       const bRating = b.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
       return bRating - aRating;
     });
-  } else if (sortBy === 'title' && sortBy !== 'recent') {
+  } else if (sortBy === 'title') {
     // If we're already sorting by title on the server, we can skip client-side sorting
     // This is a fallback in case server sorting doesn't work
     movies.sort((a, b) => a.title.localeCompare(b.title));
