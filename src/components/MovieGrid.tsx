@@ -40,6 +40,7 @@ const MovieGrid = ({
                 <SelectContent>
                   <SelectItem value="rating">Highest Rating</SelectItem>
                   <SelectItem value="hipster">Hipster Rating</SelectItem>
+                  <SelectItem value="title">Title A-Z</SelectItem>
                 </SelectContent>
               </Select>
             </div>

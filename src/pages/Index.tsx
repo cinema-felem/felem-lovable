@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "@/components/HeroSection";
@@ -69,6 +68,11 @@ const Index = () => {
           variant: "default"
         });
       }
+    } else if (value === 'title' && movies.length > 0) {
+      const sortedMovies = [...movies].sort((a, b) => 
+        a.title.localeCompare(b.title)
+      );
+      setMovies(sortedMovies);
     }
   };
 

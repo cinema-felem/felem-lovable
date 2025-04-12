@@ -38,6 +38,19 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       tmdbId: item.id
     }));
     movieError = error;
+  } else if (sortBy === 'title') {
+    const { data, error } = await supabase
+      .from('tmdb')
+      .select('id, title, image, release_date, ratings, genres')
+      .order('title', { ascending: true })
+      .range(from, to + 1);
+    
+    movieData = data?.map(item => ({
+      id: item.id.toString(),
+      title: item.title,
+      tmdbId: item.id
+    }));
+    movieError = error;
   } else {
     const { data, error } = await supabase
       .from('Movie')
@@ -155,6 +168,10 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
       const bRating = b.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
       return bRating - aRating;
     });
+  } else if (sortBy === 'title' && sortBy !== 'recent') {
+    // If we're already sorting by title on the server, we can skip client-side sorting
+    // This is a fallback in case server sorting doesn't work
+    movies.sort((a, b) => a.title.localeCompare(b.title));
   }
   
   return { movies, hasMore };
