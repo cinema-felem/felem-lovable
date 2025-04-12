@@ -1,3 +1,4 @@
+import { Sentry } from "@/integrations/sentry/config";
 
 // Utility functions for Google Analytics event tracking
 
@@ -14,6 +15,13 @@ export const logPageView = (path: string, title: string) => {
       send_to: 'G-EJ3E57L04J'
     });
     console.log(`📊 GA Page View: ${path}`);
+    
+    // Also track in Sentry
+    Sentry.addBreadcrumb({
+      category: 'navigation',
+      message: `Page view: ${path}`,
+      level: 'info'
+    });
   }
 };
 
@@ -26,6 +34,14 @@ export const logEvent = (eventName: string, eventParams?: Record<string, any>) =
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, eventParams);
     console.log(`📊 GA Event: ${eventName}`, eventParams);
+    
+    // Also track in Sentry
+    Sentry.addBreadcrumb({
+      category: 'event',
+      message: `Event: ${eventName}`,
+      data: eventParams,
+      level: 'info'
+    });
   }
 };
 

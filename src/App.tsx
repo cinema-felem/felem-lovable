@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
+import SentryErrorBoundary from "./components/SentryErrorBoundary";
+import { Sentry } from "./integrations/sentry/config";
 import Index from "./pages/Index";
 import MovieDetails from "./pages/MovieDetails";
 import Cinemas from "./pages/Cinemas";
@@ -31,6 +33,12 @@ const RouteTracker = () => {
       // Get the page title from the document or use a fallback
       const title = document.title || 'Felem - Movie Curation Website';
       logPageView(location.pathname, title);
+      
+      // Also send to Sentry for monitoring
+      Sentry.captureMessage(`Page viewed: ${location.pathname}`, {
+        level: 'info',
+        tags: { route: location.pathname }
+      });
     }
   }, [location, navigationType]);
 
@@ -38,40 +46,42 @@ const RouteTracker = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <RouteTracker />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/movie/:id" element={<MovieDetails />} />
-              <Route path="/cinemas" element={<Cinemas />} />
-              <Route path="/cinemas/:id" element={<CinemaDetails />} />
-              <Route path="/attribution" element={<Attribution />} />
-              
-              {/* Admin routes */}
-              <Route path="/admin/login" element={<Login />} />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </HelmetProvider>
-  </QueryClientProvider>
+  <SentryErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <RouteTracker />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/movie/:id" element={<MovieDetails />} />
+                <Route path="/cinemas" element={<Cinemas />} />
+                <Route path="/cinemas/:id" element={<CinemaDetails />} />
+                <Route path="/attribution" element={<Attribution />} />
+                
+                {/* Admin routes */}
+                <Route path="/admin/login" element={<Login />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
+  </SentryErrorBoundary>
 );
 
 export default App;
