@@ -5,7 +5,6 @@ import { Movie } from "./MovieCard.d";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { fetchShowtimesForMovie } from "@/services/showtimeService";
 
 interface MovieGridProps {
   title: string;
@@ -15,49 +14,14 @@ interface MovieGridProps {
   isLoading?: boolean;
   sortOption?: string;
   onSortChange?: (value: string) => void;
-  showOnlyWithShowtimes?: boolean;
 }
 
 const MovieGrid = ({ 
   title, 
   movies, 
   sortOption = "rating",
-  onSortChange,
-  showOnlyWithShowtimes = false
+  onSortChange
 }: MovieGridProps) => {
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>(movies);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  useEffect(() => {
-    if (!showOnlyWithShowtimes) {
-      setFilteredMovies(movies);
-      return;
-    }
-
-    const filterMoviesWithShowtimes = async () => {
-      setIsFiltering(true);
-      
-      const moviesWithShowtimes: Movie[] = [];
-      
-      for (const movie of movies) {
-        try {
-          // Convert movie.id to string to ensure type compatibility
-          const showtimes = await fetchShowtimesForMovie(String(movie.id));
-          if (showtimes.length > 0) {
-            moviesWithShowtimes.push(movie);
-          }
-        } catch (error) {
-          console.error(`Error checking showtimes for movie ${movie.id}:`, error);
-        }
-      }
-      
-      setFilteredMovies(moviesWithShowtimes);
-      setIsFiltering(false);
-    };
-    
-    filterMoviesWithShowtimes();
-  }, [movies, showOnlyWithShowtimes]);
-
   return (
     <section className="py-8">
       <div className="container mx-auto px-4">
@@ -82,19 +46,13 @@ const MovieGrid = ({
           )}
         </div>
         
-        {isFiltering ? (
-          <div className="text-center py-8">
-            <p className="text-white">Filtering movies with showtimes...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {filteredMovies.map((movie) => (
-              <div key={movie.id} className="aspect-[2/3]">
-                <MovieCard movie={movie} />
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {movies.map((movie) => (
+            <div key={movie.id} className="aspect-[2/3]">
+              <MovieCard movie={movie} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

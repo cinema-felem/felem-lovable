@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import MovieGrid from "@/components/MovieGrid";
@@ -82,7 +83,6 @@ const Movies = () => {
               isLoading={loadingMore}
               sortOption={sortOption}
               onSortChange={handleSortChange}
-              showOnlyWithShowtimes={true}
             />
           )}
         </div>
