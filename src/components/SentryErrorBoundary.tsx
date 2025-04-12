@@ -24,7 +24,13 @@ class SentryErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     Sentry.withScope((scope) => {
-      scope.setExtras(errorInfo);
+      // Convert ErrorInfo to a plain object with string keys
+      const extras = {
+        componentStack: errorInfo.componentStack || '',
+        // Add any other properties from errorInfo if needed
+      };
+      
+      scope.setExtras(extras);
       const eventId = Sentry.captureException(error);
       this.setState({ eventId });
     });
