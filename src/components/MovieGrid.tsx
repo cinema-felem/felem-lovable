@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import MovieCard from "./MovieCard";
 import { Movie } from "./MovieCard.d";
@@ -40,7 +41,8 @@ const MovieGrid = ({
       
       for (const movie of movies) {
         try {
-          const showtimes = await fetchShowtimesForMovie(movie.id);
+          // Convert movie.id to string to ensure type compatibility
+          const showtimes = await fetchShowtimesForMovie(String(movie.id));
           if (showtimes.length > 0) {
             moviesWithShowtimes.push(movie);
           }
