@@ -161,17 +161,17 @@ export async function fetchPopularMovies(page = 0, limit = 10, sortBy = 'rating'
     console.log('Filtering for Hipster Rating', {
       totalMovies: movies.length,
       moviesWithLetterboxdRatings: movies.filter(movie => 
-        movie.allRatings && movie.allRatings.some(r => r.source === 'letterboxd')
+        movie.allRatings && movie.allRatings.some(r => r.source === 'Letterboxd')
       ).length
     });
 
     movies = movies.filter(movie => 
-      movie.allRatings && movie.allRatings.some(r => r.source === 'letterboxd')
+      movie.allRatings && movie.allRatings.some(r => r.source === 'Letterboxd')
     );
     
     movies.sort((a, b) => {
-      const aRating = a.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
-      const bRating = b.allRatings?.find(r => r.source === 'letterboxd')?.rating || 0;
+      const aRating = a.allRatings?.find(r => r.source === 'Letterboxd')?.rating || 0;
+      const bRating = b.allRatings?.find(r => r.source === 'Letterboxd')?.rating || 0;
       
       console.log('Hipster Rating Sort', {
         movieA: { title: a.title, letterboxdRating: aRating },

@@ -51,7 +51,7 @@ const Index = () => {
         totalMovies: movies.length,
         moviesWithLetterboxdRatings: movies.filter(movie => {
           if (movie.allRatings) {
-            return movie.allRatings.some(rating => rating.source === 'letterboxd');
+            return movie.allRatings.some(rating => rating.source === 'Letterboxd');
           }
           return false;
         }).length
@@ -59,15 +59,15 @@ const Index = () => {
 
       const filteredMovies = [...movies].filter(movie => {
         if (movie.allRatings) {
-          return movie.allRatings.some(rating => rating.source === 'letterboxd');
+          return movie.allRatings.some(rating => rating.source === 'Letterboxd');
         }
         return false;
       });
       
       if (filteredMovies.length > 0) {
         const sortedMovies = filteredMovies.sort((a, b) => {
-          const aRating = a.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
-          const bRating = b.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+          const aRating = a.allRatings?.find(rating => rating.source === 'Letterboxd')?.rating || 0;
+          const bRating = b.allRatings?.find(rating => rating.source === 'Letterboxd')?.rating || 0;
           
           console.log('Hipster Rating Comparison', {
             movieA: { title: a.title, letterboxdRating: aRating },
@@ -112,15 +112,15 @@ const Index = () => {
         } else if (sortOption === 'hipster') {
           const filteredMovies = allMovies.filter(movie => {
             if (movie.allRatings) {
-              return movie.allRatings.some(rating => rating.source === 'letterboxd');
+              return movie.allRatings.some(rating => rating.source === 'Letterboxd');
             }
             return false;
           });
           
           if (filteredMovies.length > 0) {
             setMovies(filteredMovies.sort((a, b) => {
-              const aRating = a.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
-              const bRating = b.allRatings?.find(rating => rating.source === 'letterboxd')?.rating || 0;
+              const aRating = a.allRatings?.find(rating => rating.source === 'Letterboxd')?.rating || 0;
+              const bRating = b.allRatings?.find(rating => rating.source === 'Letterboxd')?.rating || 0;
               return bRating - aRating;
             }));
           } else {
