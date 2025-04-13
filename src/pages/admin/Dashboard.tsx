@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { GarbageTitleManager } from "@/components/admin/GarbageTitleManager";
 import { MovieManager } from "@/components/admin/MovieManager";
+import { UpdatesManager } from "@/components/admin/UpdatesManager";
 
 export default function Dashboard() {
   const { signOut, user } = useAuth();
@@ -39,7 +40,7 @@ export default function Dashboard() {
 
       <div className="container mx-auto py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 bg-card">
+          <TabsList className="grid w-full grid-cols-3 bg-card">
             <TabsTrigger 
               value="garbage-titles" 
               className="data-[state=active]:bg-primary data-[state=active]:text-cinema-dark-blue"
@@ -52,6 +53,12 @@ export default function Dashboard() {
             >
               Movies
             </TabsTrigger>
+            <TabsTrigger 
+              value="updates"
+              className="data-[state=active]:bg-primary data-[state=active]:text-cinema-dark-blue"
+            >
+              Updates
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="garbage-titles" className="p-4 bg-card rounded-md shadow">
@@ -60,6 +67,10 @@ export default function Dashboard() {
           
           <TabsContent value="movies" className="p-4 bg-card rounded-md shadow">
             <MovieManager />
+          </TabsContent>
+          
+          <TabsContent value="updates" className="p-4 bg-card rounded-md shadow">
+            <UpdatesManager />
           </TabsContent>
         </Tabs>
       </div>
