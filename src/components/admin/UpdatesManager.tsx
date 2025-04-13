@@ -17,6 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -62,6 +69,11 @@ const updateFormSchema = z.object({
 
 type UpdateFormValues = z.infer<typeof updateFormSchema>;
 
+// Dropdown options
+const MODULE_OPTIONS = ["movie"];
+const OPERATION_OPTIONS = ["update"];
+const SOURCE_FIELD_OPTIONS = ["id"];
+
 export function UpdatesManager() {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,9 +85,9 @@ export function UpdatesManager() {
   const form = useForm<UpdateFormValues>({
     resolver: zodResolver(updateFormSchema),
     defaultValues: {
-      modelName: "",
-      operation: "",
-      sourceField: "",
+      modelName: MODULE_OPTIONS[0],
+      operation: OPERATION_OPTIONS[0],
+      sourceField: SOURCE_FIELD_OPTIONS[0],
       sourceText: "",
       destinationField: "",
       destinationText: "",
@@ -98,9 +110,9 @@ export function UpdatesManager() {
       });
     } else {
       form.reset({
-        modelName: "",
-        operation: "",
-        sourceField: "",
+        modelName: MODULE_OPTIONS[0],
+        operation: OPERATION_OPTIONS[0],
+        sourceField: SOURCE_FIELD_OPTIONS[0],
         sourceText: "",
         destinationField: "",
         destinationText: "",
@@ -338,7 +350,21 @@ export function UpdatesManager() {
                     <FormItem>
                       <FormLabel>Model Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Movie, Cinema" {...field} />
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select model name" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MODULE_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -352,7 +378,21 @@ export function UpdatesManager() {
                     <FormItem>
                       <FormLabel>Operation</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. update, create" {...field} />
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select operation" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {OPERATION_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -366,7 +406,21 @@ export function UpdatesManager() {
                     <FormItem>
                       <FormLabel>Source Field</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. title, name" {...field} />
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select source field" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SOURCE_FIELD_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
