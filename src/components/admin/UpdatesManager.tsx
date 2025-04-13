@@ -16,7 +16,6 @@ import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -35,9 +34,7 @@ import {
 import { 
   Plus, 
   Edit, 
-  Trash2, 
-  Save,
-  X
+  Trash2
 } from "lucide-react";
 
 // Define the type for an Update record
@@ -173,13 +170,20 @@ export function UpdatesManager() {
 
   const onSubmit = async (values: UpdateFormValues) => {
     try {
+      const timestamp = new Date().toISOString();
+      
       if (currentUpdate) {
         // Update existing record
         const { error } = await supabase
           .from("Updates")
           .update({
-            ...values,
-            updatedAt: new Date().toISOString(),
+            modelName: values.modelName,
+            operation: values.operation,
+            sourceField: values.sourceField,
+            sourceText: values.sourceText,
+            destinationField: values.destinationField,
+            destinationText: values.destinationText,
+            updatedAt: timestamp,
           })
           .eq("id", currentUpdate.id);
           
@@ -190,13 +194,18 @@ export function UpdatesManager() {
           description: "Update modified successfully",
         });
       } else {
-        // Create new record
+        // Create new record - ensure all required fields are present
         const { error } = await supabase
           .from("Updates")
           .insert({
-            ...values,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            modelName: values.modelName,
+            operation: values.operation,
+            sourceField: values.sourceField,
+            sourceText: values.sourceText,
+            destinationField: values.destinationField,
+            destinationText: values.destinationText,
+            createdAt: timestamp,
+            updatedAt: timestamp,
           });
           
         if (error) throw error;
