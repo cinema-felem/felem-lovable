@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +43,13 @@ export interface Update {
   updatedAt: string;
 }
 
-// Define the validation schema for the form
+// Update the existing constants with new options
+export const MODULE_OPTIONS = ["movie"];
+export const OPERATION_OPTIONS = ["update", "merge"];
+export const SOURCE_FIELD_OPTIONS = ["id"];
+export const DESTINATION_FIELD_OPTIONS = ["id", "tmdbId"];
+
+// Update the validation schema to include the new options
 export const updateFormSchema = z.object({
   modelName: z.string().min(1, "Model name is required"),
   operation: z.string().min(1, "Operation is required"),
@@ -55,11 +60,6 @@ export const updateFormSchema = z.object({
 });
 
 export type UpdateFormValues = z.infer<typeof updateFormSchema>;
-
-// Dropdown options
-export const MODULE_OPTIONS = ["movie"];
-export const OPERATION_OPTIONS = ["update"];
-export const SOURCE_FIELD_OPTIONS = ["id"];
 
 interface UpdateFormProps {
   isSheetOpen: boolean;
@@ -292,11 +292,21 @@ export function UpdateForm({ isSheetOpen, setIsSheetOpen, currentUpdate, onSucce
                   <FormItem>
                     <FormLabel>Destination Field (optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="e.g. title, name" 
-                        {...field} 
-                        value={field.value || ""}
-                      />
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select destination field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DESTINATION_FIELD_OPTIONS.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
