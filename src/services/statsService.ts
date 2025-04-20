@@ -76,8 +76,15 @@ export async function fetchMovieStats() {
     // Ensure ratings are properly typed as numbers
     let ratingNumbers: number[] = [];
     if (item.ratings && Array.isArray(item.ratings)) {
-      ratingNumbers = item.ratings
-        .map(r => typeof r.rating === 'number' ? r.rating : null)
+      // Safely extract rating values with proper type checking
+      ratingNumbers = (item.ratings as any[])
+        .map(r => {
+          // Check if r is an object with a rating property that's a number
+          if (r && typeof r === 'object' && 'rating' in r && typeof r.rating === 'number') {
+            return r.rating;
+          }
+          return null;
+        })
         .filter((r): r is number => r !== null);
     }
 
