@@ -15,6 +15,7 @@ import CinemaDetails from "./pages/CinemaDetails";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
+import Stats from "./pages/Stats";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { logPageView } from "./utils/analytics";
