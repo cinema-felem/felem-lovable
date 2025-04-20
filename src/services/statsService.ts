@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export async function fetchMovieStats() {
@@ -11,7 +10,8 @@ export async function fetchMovieStats() {
       cinemaId,
       Movie (
         id,
-        title
+        title,
+        tmdbId
       )
     `);
 
@@ -25,12 +25,15 @@ export async function fetchMovieStats() {
   const movieShowingCounts = new Map();
   const movieCinemas = new Map();
   const movieFormats = new Map();
+  const tmdbIds = new Set();
 
   showings.forEach((showing) => {
     const movieId = showing.filmId;
     const movieTitle = showing.Movie?.title;
+    const tmdbId = showing.Movie?.tmdbId;
 
     if (!movieTitle) return;
+    if (tmdbId) tmdbIds.add(tmdbId);
 
     // Count showings per movie
     movieShowingCounts.set(movieId, (movieShowingCounts.get(movieId) || 0) + 1);
@@ -51,16 +54,43 @@ export async function fetchMovieStats() {
     movieStats.set(movieId, {
       id: movieId,
       title: movieTitle,
+      tmdbId,
+    });
+  });
+
+  // Fetch TMDB data for release dates and ratings
+  const { data: tmdbData, error: tmdbError } = await supabase
+    .from('tmdb')
+    .select('id, release_date, ratings')
+    .in('id', Array.from(tmdbIds));
+
+  if (tmdbError) {
+    console.error('Error fetching TMDB data:', tmdbError);
+    throw tmdbError;
+  }
+
+  // Create a lookup map for TMDB data
+  const tmdbLookup = new Map();
+  tmdbData?.forEach(item => {
+    tmdbLookup.set(item.id, {
+      releaseDate: item.release_date,
+      allRatings: item.ratings,
     });
   });
 
   // Transform data for components
-  const movieStatsArray = Array.from(movieStats.entries()).map(([id, movie]) => ({
-    ...movie,
-    showingsCount: movieShowingCounts.get(id) || 0,
-    uniqueCinemas: movieCinemas.get(id)?.size || 0,
-    formats: Array.from(movieFormats.get(id) || []),
-  }));
+  const movieStatsArray = Array.from(movieStats.entries()).map(([id, movie]: [string, any]) => {
+    const tmdbInfo = movie.tmdbId ? tmdbLookup.get(movie.tmdbId) : null;
+    
+    return {
+      ...movie,
+      showingsCount: movieShowingCounts.get(id) || 0,
+      uniqueCinemas: movieCinemas.get(id)?.size || 0,
+      formats: Array.from(movieFormats.get(id) || []),
+      releaseDate: tmdbInfo?.releaseDate,
+      allRatings: tmdbInfo?.allRatings,
+    };
+  });
 
   // Sort by showing count
   movieStatsArray.sort((a, b) => b.showingsCount - a.showingsCount);
