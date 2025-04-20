@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function fetchMovieStats() {
@@ -72,9 +73,18 @@ export async function fetchMovieStats() {
   // Create a lookup map for TMDB data
   const tmdbLookup = new Map();
   tmdbData?.forEach(item => {
+    // Ensure ratings are properly typed as numbers
+    let ratingNumbers: number[] = [];
+    if (item.ratings && Array.isArray(item.ratings)) {
+      ratingNumbers = item.ratings
+        .map(r => typeof r.rating === 'number' ? r.rating : null)
+        .filter((r): r is number => r !== null);
+    }
+
     tmdbLookup.set(item.id, {
       releaseDate: item.release_date,
       allRatings: item.ratings,
+      ratingNumbers: ratingNumbers // Store the filtered number array
     });
   });
 
@@ -89,6 +99,7 @@ export async function fetchMovieStats() {
       formats: Array.from(movieFormats.get(id) || []),
       releaseDate: tmdbInfo?.releaseDate,
       allRatings: tmdbInfo?.allRatings,
+      ratingNumbers: tmdbInfo?.ratingNumbers || [], // Use the properly typed ratings
     };
   });
 

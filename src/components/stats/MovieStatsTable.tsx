@@ -18,6 +18,7 @@ interface MovieStats {
   formats: string[];
   releaseDate?: string;
   allRatings?: { source: string; rating: number; votes?: number }[];
+  ratingNumbers: number[]; // Add the properly typed ratings array
 }
 
 interface MovieStatsTableProps {
@@ -41,8 +42,9 @@ export function MovieStatsTable({ data }: MovieStatsTableProps) {
         </TableHeader>
         <TableBody>
           {data.map((movie) => {
-            const medianRating = movie.allRatings 
-              ? calculateMedianRating(movie.allRatings.map(r => r.rating))
+            // Use the properly typed rating numbers array
+            const medianRating = movie.ratingNumbers && movie.ratingNumbers.length > 0
+              ? calculateMedianRating(movie.ratingNumbers)
               : null;
 
             const formattedDate = movie.releaseDate 
