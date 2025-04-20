@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -275,7 +276,12 @@ export function MovieManager() {
                         className="min-w-[200px] bg-cinema-dark-blue/10 border-cinema-dark-blue"
                       />
                     ) : (
-                      movie.title
+                      <Link 
+                        to={`/movie/${movie.id}`}
+                        className="text-cinema-gold hover:text-cinema-gold/80 transition-colors"
+                      >
+                        {movie.title}
+                      </Link>
                     )}
                   </TableCell>
                   <TableCell>
