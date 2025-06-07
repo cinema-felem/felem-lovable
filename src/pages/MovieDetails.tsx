@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -257,6 +256,7 @@ const MovieDetails = () => {
               showtimes={showtimes}
               availableDates={availableDates}
               cinemas={cinemas}
+              movieTitle={movie.title}
               onDateChange={handleDateChange}
               onCinemaChange={handleCinemaChange}
             />

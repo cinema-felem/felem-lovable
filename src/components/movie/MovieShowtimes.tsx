@@ -22,6 +22,7 @@ interface MovieShowtimesProps {
   showtimes: Showtime[];
   availableDates: Date[];
   cinemas: CinemaOption[];
+  movieTitle?: string;
   onDateChange: (date: Date | undefined) => void;
   onCinemaChange: (cinemaId: string | undefined) => void;
 }
@@ -30,6 +31,7 @@ const MovieShowtimes = ({
   showtimes, 
   availableDates, 
   cinemas,
+  movieTitle = "Movie",
   onDateChange,
   onCinemaChange
 }: MovieShowtimesProps) => {
@@ -142,6 +144,7 @@ const MovieShowtimes = ({
               key={cinemaName}
               cinemaName={cinemaName}
               showtimes={cinemaTimes}
+              movieTitle={movieTitle}
             />
           ))}
         </div>

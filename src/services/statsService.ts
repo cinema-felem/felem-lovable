@@ -1,140 +1,85 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { calculateMedianRating } from "@/utils/ratingUtils";
+import { fetchTmdbDataByIds } from "./tmdbService";
 
-export async function fetchMovieStats() {
-  // Fetch all showings with movie information
-  const { data: showings, error } = await supabase
-    .from('Showtime')
-    .select(`
-      filmId,
-      movieFormat,
-      cinemaId,
-      Movie (
-        id,
-        title,
-        tmdbId
-      )
-    `);
+interface MovieStats {
+  id: string;
+  title: string;
+  rating: number;
+  ratingNumbers: number[];
+  showtimeCount: number;
+}
 
-  if (error) {
-    console.error('Error fetching movie stats:', error);
-    throw error;
-  }
+export async function fetchMovieStats(): Promise<MovieStats[]> {
+  try {
+    const { data: movies, error } = await supabase
+      .from('Movie')
+      .select('id, title, tmdbId')
+      .order('title');
 
-  // Process the data
-  const movieStats = new Map();
-  const movieShowingCounts = new Map();
-  const movieCinemas = new Map();
-  const movieFormats = new Map();
-  const tmdbIds = new Set();
-
-  showings.forEach((showing) => {
-    const movieId = showing.filmId;
-    const movieTitle = showing.Movie?.title;
-    const tmdbId = showing.Movie?.tmdbId;
-
-    if (!movieTitle) return;
-    if (tmdbId) tmdbIds.add(tmdbId);
-
-    // Count showings per movie
-    movieShowingCounts.set(movieId, (movieShowingCounts.get(movieId) || 0) + 1);
-
-    // Track unique cinemas per movie
-    if (!movieCinemas.has(movieId)) {
-      movieCinemas.set(movieId, new Set());
+    if (error) {
+      console.error('Error fetching movies:', error);
+      return [];
     }
-    movieCinemas.get(movieId).add(showing.cinemaId);
 
-    // Track formats per movie
-    if (!movieFormats.has(movieId)) {
-      movieFormats.set(movieId, new Set());
+    const tmdbIds = movies
+      ?.filter(movie => movie.tmdbId)
+      .map(movie => movie.tmdbId) as number[];
+
+    if (!tmdbIds || tmdbIds.length === 0) {
+      return movies?.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        rating: 0,
+        ratingNumbers: [],
+        showtimeCount: 0
+      })) || [];
     }
-    movieFormats.get(movieId).add(showing.movieFormat);
 
-    // Store movie info
-    movieStats.set(movieId, {
-      id: movieId,
-      title: movieTitle,
-      tmdbId,
+    const tmdbData = await fetchTmdbDataByIds(tmdbIds);
+
+    const { data: showtimeCounts, error: showtimeError } = await supabase
+      .from('Showtime')
+      .select('filmId')
+      .order('filmId');
+
+    if (showtimeError) {
+      console.error('Error fetching showtime counts:', showtimeError);
+    }
+
+    const showtimeCountMap = new Map<string, number>();
+    showtimeCounts?.forEach(showtime => {
+      const count = showtimeCountMap.get(showtime.filmId) || 0;
+      showtimeCountMap.set(showtime.filmId, count + 1);
     });
-  });
 
-  // Fetch TMDB data for release dates and ratings
-  const { data: tmdbData, error: tmdbError } = await supabase
-    .from('tmdb')
-    .select('id, release_date, ratings')
-    .in('id', Array.from(tmdbIds));
+    return movies?.map(movie => {
+      const tmdbInfo = movie.tmdbId ? tmdbData.get(movie.tmdbId) : null;
+      const ratings = tmdbInfo?.ratings as any[] | null;
+      
+      // Filter and extract valid rating numbers
+      const validRatings = ratings
+        ?.filter(rating => 
+          rating && 
+          typeof rating === 'object' && 
+          'rating' in rating && 
+          typeof rating.rating === 'number' &&
+          rating.rating > 0
+        )
+        .map(rating => rating.rating) || [];
 
-  if (tmdbError) {
-    console.error('Error fetching TMDB data:', tmdbError);
-    throw tmdbError;
+      const medianRating = validRatings.length > 0 ? calculateMedianRating(validRatings) : 0;
+
+      return {
+        id: movie.id,
+        title: movie.title,
+        rating: medianRating,
+        ratingNumbers: validRatings,
+        showtimeCount: showtimeCountMap.get(movie.id) || 0
+      };
+    }) || [];
+  } catch (error) {
+    console.error('Error in fetchMovieStats:', error);
+    return [];
   }
-
-  // Create a lookup map for TMDB data
-  const tmdbLookup = new Map();
-  tmdbData?.forEach(item => {
-    // Ensure ratings are properly typed as numbers
-    let ratingNumbers: number[] = [];
-    if (item.ratings && Array.isArray(item.ratings)) {
-      // Safely extract rating values with proper type checking
-      ratingNumbers = (item.ratings as any[])
-        .map(r => {
-          // Check if r is an object with a rating property that's a number
-          if (r && typeof r === 'object' && 'rating' in r && typeof r.rating === 'number') {
-            return r.rating;
-          }
-          return null;
-        })
-        .filter((r): r is number => r !== null);
-    }
-
-    tmdbLookup.set(item.id, {
-      releaseDate: item.release_date,
-      allRatings: item.ratings,
-      ratingNumbers: ratingNumbers // Store the filtered number array
-    });
-  });
-
-  // Transform data for components
-  const movieStatsArray = Array.from(movieStats.entries()).map(([id, movie]: [string, any]) => {
-    const tmdbInfo = movie.tmdbId ? tmdbLookup.get(movie.tmdbId) : null;
-    
-    return {
-      ...movie,
-      showingsCount: movieShowingCounts.get(id) || 0,
-      uniqueCinemas: movieCinemas.get(id)?.size || 0,
-      formats: Array.from(movieFormats.get(id) || []),
-      releaseDate: tmdbInfo?.releaseDate,
-      allRatings: tmdbInfo?.allRatings,
-      ratingNumbers: tmdbInfo?.ratingNumbers || [], // Use the properly typed ratings
-    };
-  });
-
-  // Sort by showing count
-  movieStatsArray.sort((a, b) => b.showingsCount - a.showingsCount);
-
-  // Calculate overview statistics
-  const totalMovies = movieStatsArray.length;
-  const totalShowings = showings.length;
-  const averageShowingsPerMovie = totalShowings / totalMovies;
-  const uniqueFormats = new Set(showings.map(s => s.movieFormat)).size;
-
-  // Prepare chart data (top 10 movies by showing count)
-  const showingCounts = movieStatsArray
-    .slice(0, 10)
-    .map(movie => ({
-      title: movie.title,
-      count: movie.showingsCount,
-    }));
-
-  return {
-    movieStats: movieStatsArray,
-    showingCounts,
-    overview: {
-      totalMovies,
-      totalShowings,
-      averageShowingsPerMovie,
-      uniqueFormats,
-    },
-  };
 }
