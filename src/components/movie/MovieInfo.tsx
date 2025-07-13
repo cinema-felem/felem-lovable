@@ -1,6 +1,6 @@
 
 import { Star, Clock, Calendar, Globe } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { InfoBadge, RatingDisplay } from "@/components/ui";
 import MovieGenres from "./MovieGenres";
 import MovieRatings from "./MovieRatings";
 import MovieCast from "./MovieCast";
@@ -45,36 +45,44 @@ const MovieInfo = ({ movie }: MovieInfoProps) => {
       <div className="flex flex-wrap items-center gap-2 mb-6 animate-slide-up">
         <span className="text-lg text-cinema-gold">{movie.releaseYear}</span>
         {movie.originalLanguage && (
-          <Badge variant="outline" className="bg-cinema-dark-gray/50 text-white">
-            <Globe className="w-3 h-3 mr-1" /> {movie.originalLanguage.toUpperCase()}
-          </Badge>
+          <InfoBadge 
+            icon={Globe} 
+            label={movie.originalLanguage.toUpperCase()}
+            variant="outline"
+          />
         )}
         {movie.parental && (
-          <Badge className="bg-cinema-dark-gray/70 text-white border border-white/20">
-            {movie.parental}
-          </Badge>
+          <InfoBadge 
+            label={movie.parental}
+            className="bg-cinema-dark-gray/70 border-white/20"
+          />
         )}
       </div>
       
       <div className="flex flex-wrap gap-4 mb-6 animate-slide-up">
         {movie.rating && movie.rating > 0 && (
-          <div className="flex items-center gap-2 bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
-            <Star className="w-5 h-5 text-cinema-gold fill-cinema-gold" />
-            <span className="text-white">{movie.rating.toFixed(1)}</span>
+          <div className="bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
+            <RatingDisplay rating={movie.rating} size="lg" />
           </div>
         )}
         
         {movie.runtime && (
-          <div className="flex items-center gap-2 bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
-            <Clock className="w-5 h-5 text-white" />
-            <span className="text-white">{movie.runtime}</span>
+          <div className="bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
+            <InfoBadge 
+              icon={Clock} 
+              label={movie.runtime}
+              className="bg-transparent border-none p-0"
+            />
           </div>
         )}
         
         {movie.releaseYear && (
-          <div className="flex items-center gap-2 bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
-            <Calendar className="w-5 h-5 text-white" />
-            <span className="text-white">{movie.releaseYear}</span>
+          <div className="bg-cinema-dark-gray/50 px-3 py-2 rounded-full">
+            <InfoBadge 
+              icon={Calendar} 
+              label={movie.releaseYear}
+              className="bg-transparent border-none p-0"
+            />
           </div>
         )}
       </div>

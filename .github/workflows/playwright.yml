@@ -1,0 +1,234 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build the application
+      run: npm run build
+    
+    - name: Run Playwright tests
+      run: npm run test
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+  test-on-multiple-browsers:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build the application
+      run: npm run build
+    
+    - name: Run Playwright tests on ${{ matrix.browser }}
+      run: npx playwright test --project=${{ matrix.browser }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+  test-mobile:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [Mobile Chrome, Mobile Safari]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build the application
+      run: npm run build
+    
+    - name: Run Playwright tests on ${{ matrix.browser }}
+      run: npx playwright test --project="${{ matrix.browser }}"
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+  test-performance:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build the application
+      run: npm run build
+    
+    - name: Run performance tests
+      run: npx playwright test tests/performance/ --project=chromium
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results
+        path: performance-results/
+        retention-days: 30
+
+  test-accessibility:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build the application
+      run: npm run build
+    
+    - name: Run accessibility tests
+      run: npx playwright test tests/accessibility/ --project=chromium
+    
+    - name: Upload accessibility results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: accessibility-results
+        path: accessibility-results/
+        retention-days: 30
+
+  test-report:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    needs: [test, test-on-multiple-browsers, test-mobile]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all test results
+      uses: actions/download-artifact@v4
+      with:
+        path: playwright-reports/
+    
+    - name: Generate test summary
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "### Main Tests" >> $GITHUB_STEP_SUMMARY
+        if [ -d "playwright-reports/playwright-report" ]; then
+          echo "✅ Main tests completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Main tests failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "### Cross-Browser Tests" >> $GITHUB_STEP_SUMMARY
+        for browser in chromium firefox webkit; do
+          if [ -d "playwright-reports/playwright-report-$browser" ]; then
+            echo "✅ $browser tests completed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ $browser tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+        
+        echo "### Mobile Tests" >> $GITHUB_STEP_SUMMARY
+        for browser in "Mobile Chrome" "Mobile Safari"; do
+          if [ -d "playwright-reports/playwright-report-$browser" ]; then
+            echo "✅ $browser tests completed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ $browser tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+        done 
