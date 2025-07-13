@@ -1,0 +1,273 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- region "Notifications alt+T"
+- navigation:
+  - link "Felem":
+    - /url: /
+  - link "Home":
+    - /url: /
+  - link "Cinemas":
+    - /url: /cinemas
+  - link "Stats":
+    - /url: /stats
+- main:
+  - link "Back to All Cinemas":
+    - /url: /cinemas
+  - heading "Cathay Cineplex Causeway Point" [level=1]
+  - img
+  - paragraph: 1 Woodlands Square, Singapore
+  - heading "Movie Showtimes" [level=2]:
+    - img
+    - text: Movie Showtimes
+  - button "July 14, 2025":
+    - img
+    - text: July 14, 2025
+  - link "Superman":
+    - /url: /movie/6ad62566-171a-4e53-96d6-fc23b46b3956
+    - img "Superman"
+  - heading "Superman" [level=3]:
+    - link "Superman":
+      - /url: /movie/6ad62566-171a-4e53-96d6-fc23b46b3956
+  - link "2:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161035
+    - text: 2:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "2:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161049
+    - text: 2:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "3:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161059
+    - text: 3:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "4:50 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161036
+    - text: 4:50 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "5:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161050
+    - text: 5:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "6:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161060
+    - text: 6:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "7:40 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161037
+    - text: 7:40 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "8:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161051
+    - text: 8:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "9:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161061
+    - text: 9:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "10:45 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161038
+    - text: 10:45 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "11:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161052
+    - text: 11:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "12:00 PM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161062
+    - text: 12:00 PM Digital
+    - img
+    - text: Book
+    - img
+  - link "Jurassic World Rebirth":
+    - /url: /movie/e2300bf8-c6b7-4d09-95b8-7f7bf12b9b82
+    - img "Jurassic World Rebirth"
+  - heading "Jurassic World Rebirth" [level=3]:
+    - link "Jurassic World Rebirth":
+      - /url: /movie/e2300bf8-c6b7-4d09-95b8-7f7bf12b9b82
+  - link "2:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161166
+    - text: 2:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "3:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161040
+    - text: 3:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "5:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161045
+    - text: 5:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "6:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161041
+    - text: 6:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "8:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161046
+    - text: 8:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "9:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161042
+    - text: 9:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "11:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161047
+    - text: 11:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "12:00 PM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161043
+    - text: 12:00 PM Digital
+    - img
+    - text: Book
+    - img
+  - link "Follow Aunty La":
+    - /url: /movie/7e077e73-226b-48da-a5d4-5e330c7ec9ad
+    - img "Follow Aunty La"
+  - heading "Follow Aunty La" [level=3]:
+    - link "Follow Aunty La":
+      - /url: /movie/7e077e73-226b-48da-a5d4-5e330c7ec9ad
+  - link "2:15 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161433
+    - text: 2:15 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "5:40 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161158
+    - text: 5:40 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "11:30 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161056
+    - text: 11:30 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "how to train your dragon (2025)":
+    - /url: /movie/d5d49fed-b16c-4ad7-abd9-675fecd9dcac
+    - img "how to train your dragon (2025)"
+  - heading "how to train your dragon (2025)" [level=3]:
+    - link "how to train your dragon (2025)":
+      - /url: /movie/d5d49fed-b16c-4ad7-abd9-675fecd9dcac
+  - link "2:45 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161168
+    - text: 2:45 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "8:40 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161055
+    - text: 8:40 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "F1":
+    - /url: /movie/1e136826-fbd9-4c36-b713-d8c1d8486e86
+    - img "F1"
+  - heading "F1" [level=3]:
+    - link "F1":
+      - /url: /movie/1e136826-fbd9-4c36-b713-d8c1d8486e86
+  - link "5:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161065
+    - text: 5:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "11:00 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161167
+    - text: 11:00 AM Digital
+    - img
+    - text: Book
+    - img
+  - link "Finding Ramlee":
+    - /url: /movie/9754d981-2512-4260-bd87-335fcfe1a690
+    - img "Finding Ramlee"
+  - heading "Finding Ramlee" [level=3]:
+    - link "Finding Ramlee":
+      - /url: /movie/9754d981-2512-4260-bd87-335fcfe1a690
+  - link "8:20 AM Digital Book":
+    - /url: https://www.cathaycineplexes.com.sg/ticketing/1102/161067
+    - text: 8:20 AM Digital
+    - img
+    - text: Book
+    - img
+- contentinfo:
+  - heading "Felem" [level=3]
+  - paragraph: Discover and curate the best movies from around the world.
+  - heading "Browse" [level=4]
+  - list:
+    - listitem:
+      - link "Home":
+        - /url: /
+    - listitem:
+      - link "Cinemas":
+        - /url: /cinemas
+    - listitem:
+      - link "Attribution":
+        - /url: /attribution
+  - heading "Information" [level=4]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - paragraph: Stay updated with the latest movie news and additions.
+  - link "Twitter":
+    - /url: "#"
+  - link "Instagram":
+    - /url: "#"
+  - link "Facebook":
+    - /url: "#"
+  - paragraph: © 2025 Felem. All rights reserved.
+  - paragraph:
+    - text: This product uses the TMDB API but is not endorsed or certified by TMDB.
+    - link "Learn more":
+      - /url: /attribution
+```

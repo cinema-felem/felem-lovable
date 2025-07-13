@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- region "Notifications alt+T"
+- navigation:
+  - link "Felem":
+    - /url: /
+  - link "Home":
+    - /url: /
+  - link "Cinemas":
+    - /url: /cinemas
+  - link "Stats":
+    - /url: /stats
+- main:
+  - paragraph: Loading movies...
+- contentinfo:
+  - heading "Felem" [level=3]
+  - paragraph: Discover and curate the best movies from around the world.
+  - heading "Browse" [level=4]
+  - list:
+    - listitem:
+      - link "Home":
+        - /url: /
+    - listitem:
+      - link "Cinemas":
+        - /url: /cinemas
+    - listitem:
+      - link "Attribution":
+        - /url: /attribution
+  - heading "Information" [level=4]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms of Service":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - paragraph: Stay updated with the latest movie news and additions.
+  - link "Twitter":
+    - /url: "#"
+  - link "Instagram":
+    - /url: "#"
+  - link "Facebook":
+    - /url: "#"
+  - paragraph: © 2025 Felem. All rights reserved.
+  - paragraph:
+    - text: This product uses the TMDB API but is not endorsed or certified by TMDB.
+    - link "Learn more":
+      - /url: /attribution
+```
