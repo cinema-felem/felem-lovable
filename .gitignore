@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright
+playwright-report/
+test-results/
+
+# Vite
+.vite/
+
+# Coverage
+coverage/
+
+# Environment files
+.env
+.env.*
+
+# Bun
+bun.lockb
+
+# Misc
+*.tgz
